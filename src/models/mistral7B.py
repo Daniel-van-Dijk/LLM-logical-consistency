@@ -11,9 +11,9 @@ model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2
 tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
 
 messages = [
-    {"role": "user", "content": "What is your favourite condiment?"},
-    {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
-    {"role": "user", "content": "Do you have mayonnaise recipes?"}
+    {"role": "user", "content": "Matthew is excellent and experienced.	Matthew is excellent. entailment, contradiction or neutral?"},
+    {"role": "assistant", "content": "entailment"},
+    {"role": "user", "content": "Dave is fitter than Andrea. Andrea is fitter than Dave. entailment, contradiction or neutral?"}
 ]
 
 encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
