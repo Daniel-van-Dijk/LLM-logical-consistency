@@ -63,5 +63,5 @@ if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
-    average_accuracy = run_tasks(args.task, args.model, args.prompt_style)
+    average_accuracy = run_tasks(args.task, args.model, args.prompt_template)
     print('average accuracy: ', average_accuracy)
