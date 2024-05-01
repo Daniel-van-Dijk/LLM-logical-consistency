@@ -1,26 +1,25 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from typing import List, Dict
+import torch
 from huggingface_hub import login
 
 # make token on hugging face and insert here
-huggingface_token = "insert_token"
-login(token=huggingface_token)
+# huggingface_token = "insert_token"
+# login(token=huggingface_token)
 
-device = "cuda" 
+class Mistral7B:
+    model_id: str = "mistralai/Mistral-7B-Instruct-v0.2"
 
-model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
-tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+    def __init__(self):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_id).to(self.device)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
 
-messages = [
-    {"role": "user", "content": "Matthew is excellent and experienced.	Matthew is excellent. a: entailment, b: contradiction or c: neutral?"},
-    {"role": "assistant", "content": "a"},
-    {"role": "user", "content": "Dave is fitter than Andrea. Andrea is fitter than Dave. a: entailment, b: contradiction or c: neutral?"}
-]
-
-encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
-
-model_inputs = encodeds.to(device)
-model.to(device)
-
-generated_ids = model.generate(model_inputs, max_new_tokens=1, do_sample=True)
-decoded = tokenizer.batch_decode(generated_ids)
-print(decoded[0])
+    def inference_for_prompt(self, prompt: List[Dict[str, str]]) -> str:
+        encodeds = self.tokenizer.apply_chat_template(prompt, return_tensors="pt", padding=True)
+        prompt_length = encodeds.size(1)
+        model_inputs = encodeds.to(self.device)
+        generated_ids = self.model.generate(model_inputs, max_new_tokens=100, do_sample=True)
+        decoded = self.tokenizer.decode(generated_ids[0][prompt_length:])
+        return decoded
