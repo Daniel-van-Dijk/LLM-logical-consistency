@@ -12,7 +12,9 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', choices=['entailment', 'truth', 'supported', 'logically_follow'], help='choose prompt template')
+    parser.add_argument('--prompt-template', default='supported', 
+                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'multiple_choice'], 
+                        help='choose prompt template')
     return parser
 
 
@@ -25,7 +27,8 @@ def run_tasks(tasks, model_name, prompt_style):
         'entailment': 'Does the hypothesis entail or contradict from the premise?',
         'logically_follow': 'Does the hypothesis logically follow from the premise?',
         'truth': 'Given the premise, is the hypothesis true?',
-        'supported': 'Is the hypothesis supported by the premise?'
+        'supported': 'Is the hypothesis supported by the premise?',
+        'multiple_choice': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
     }
     instruction_format = prompt_templates[prompt_style]
 
@@ -36,6 +39,7 @@ def run_tasks(tasks, model_name, prompt_style):
     elif model_name == 'llama3_8B':
         model = LLama3_8B()
 
+    total_accuracy: float = 0.
     for task in tasks:
         file_path = f'../data/{task}.tsv'
         processed_data = process_tsv(file_path)
@@ -52,9 +56,12 @@ def run_tasks(tasks, model_name, prompt_style):
         if prompt_style in ['entailment', 'truth',  'supported', 'logically_follow']:
             # TODO: improve parsing output to evaluate
             results, accuracy, _, _, _ = parse_yes_no_output(answers)
+        elif prompt_style == 'multiple_choice':
+            results, accuracy, _, _, _ = parse_multiple_choice(answers)
         else:
             print("Define parse function for other prompt templates")
             exit()
+        
         print(f'Accuracy for {task}: {accuracy:.2%}')
         for result in results:
             print(result) 
