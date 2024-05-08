@@ -23,6 +23,7 @@ class Hermes13B:
             conversation=prompt, 
             return_tensors="pt"
         ).to(self.device)
+        prompt_length = encoded_prompt.size(1)
 
         generated_ids = self.model.generate(
             encoded_prompt,
@@ -30,6 +31,7 @@ class Hermes13B:
             do_sample=True
         )
 
-        decoded_output = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+        model_output_ids = generated_ids[0][prompt_length:]
+        decoded_output = self.tokenizer.decode(model_output_ids, skip_special_tokens=True)
 
         return decoded_output
