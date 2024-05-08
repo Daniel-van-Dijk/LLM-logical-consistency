@@ -2,6 +2,7 @@ import argparse
 from models.hermes13B import Hermes13B
 from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
+from models.starling7B import Starling7B
 
 from preprocess import *
 from utils import *
@@ -42,6 +43,8 @@ def run_tasks(tasks, model_name, prompt_style, prompt_type):
         model = Mistral7B()
     elif model_name == 'llama3_8B':
         model = LLama3_8B()
+    elif model_name == 'starling7B':
+        model = Starling7B()
 
     total_accuracy: float = 0.
     for task in tasks:
