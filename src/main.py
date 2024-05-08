@@ -5,6 +5,7 @@ from models.llama3_8B import LLama3_8B
 
 from preprocess import *
 from utils import *
+from prompts import get_few_shot_template
 
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
@@ -58,6 +59,11 @@ def run_tasks(tasks, model_name, prompt_style, prompt_type):
                 print("Prompt instruction 2: ", instruction_2)
                 message_2 = [{"role": "user", "content": instruction_2}]
                 output = model.inference_for_prompt(prompt=message_2)
+                print("------------------------------------------------")
+                print(f"Model output: {output}")
+            if prompt_type == 'few_shot':
+                message = get_few_shot_template(instruction=instruction_format)
+                output = model.inference_for_prompt(prompt=message)
                 print("------------------------------------------------")
                 print(f"Model output: {output}")
             else:
