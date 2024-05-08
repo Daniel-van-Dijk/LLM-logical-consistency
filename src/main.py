@@ -15,8 +15,9 @@ def get_args_parser():
     parser.add_argument('--prompt-template', default='supported', 
                         choices=['entailment', 'truth', 'supported', 'logically_follow', 'multiple_choice'], 
                         help='choose prompt template')
-    parser.add_argument('--prompt_type',default='zero_shot_cot',choices=[ 'zero_shot', 'zero_shot_cot', 'few_shot','few_shot_cot'],
-                         help= 'choose prompt type' )
+    parser.add_argument('--prompt_type', default='zero_shot_cot', 
+                        choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
+                        help= 'choose prompt type' )
     return parser
 
 
@@ -52,15 +53,13 @@ def run_tasks(tasks, model_name, prompt_style, prompt_type):
                 print("Prompt instruction 1: ", instruction_1)
                 message_1 = [{"role": "user", "content": instruction_1}]
                 output_1 = model.inference_for_prompt(prompt=message_1)
-                instruction_2= instruction_1+ output_1 + 'Therefore the answer among entailment, contradiction and neutral is: '
+                instruction_2 = instruction_1 + output_1 + 'Therefore the answer among entailment, contradiction and neutral is: '
                 print("-------------------------------------------------")
                 print("Prompt instruction 2: ", instruction_2)
                 message_2 = [{"role": "user", "content": instruction_2}]
                 output = model.inference_for_prompt(prompt=message_2)
                 print("------------------------------------------------")
                 print(f"Model output: {output}")
-
-
             else:
                 instruction = f'Premise: "{entry[1]}" Hypothesis: "{entry[2]}" {instruction_format}'
                 print("Prompt: ", instruction)
@@ -70,7 +69,7 @@ def run_tasks(tasks, model_name, prompt_style, prompt_type):
                 
             answers.append((instruction, output, entry[0]))
         
-        if prompt_style in ['entailment', 'truth',  'supported', 'logically_follow']:
+        if prompt_style in ['entailment', 'truth', 'supported', 'logically_follow']:
             # TODO: improve parsing output to evaluate
             results, accuracy, _, _, _ = parse_yes_no_output(answers)
         elif prompt_style == 'multiple_choice':
