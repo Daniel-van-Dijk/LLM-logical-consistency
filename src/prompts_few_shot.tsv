@@ -1,0 +1,10 @@
+boolean	entailment	Marie is empathic and adaptable.	Marie is empathic.
+causal	contradiction	Bob has moved to Belgium from France.	Bob now lives in France.
+comparative	neutral	David is more interesting than Wendy. David is more interesting than Chris.	Wendy is more interesting than Chris.
+conditional	entailment	If David comes to the hotel, Cathy won't come. David came to the hotel.	Cathy didn't come to the hotel.
+coreference	contradiction	David has a book. He is tired.	Book is tired.
+negation	contradiction	Marie is a nurse. 	Marie is not a nurse.
+quantifier	neutral	None of the drawings are orange in colour.	All of the drawings are green in colour.
+relational	entailment	Marie is daughter of Jean.	Jean is parent of Marie.
+spatial	entailment	Bob is to the right of Ben. Ben is to the right of Wendy.	Wendy is to the left of Bob.
+temporal	contradiction	Jean has music class followed by art class.	Music class is after art class.
