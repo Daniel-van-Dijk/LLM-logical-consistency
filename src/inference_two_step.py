@@ -22,10 +22,10 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt_template', default='supported', 
+    parser.add_argument('--prompt-template', default='supported', type=str,
                         choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
                         help='choose prompt template')
-    parser.add_argument('--prompt_type', default='zero_shot', 
+    parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type' )
     return parser
@@ -54,7 +54,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
         model = Starling7B()
 
     # Evaluator is ALWAYS Llama3 
-    evaluation_model = LLama3_8B()
+    evaluation_model = model
 
     # Prompters
     prompter: DefaultPrompter = create_prompter_from_str(prompt_type)
@@ -113,7 +113,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
-    validate_args(args)
     print(f'Model: {args.model}')
     average_accuracy = run_tasks(args.task, args.model, args.prompt_template, args.prompt_type)
     print('average accuracy: ', average_accuracy)

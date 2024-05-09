@@ -45,7 +45,7 @@ class ZeroShotPompter(DefaultPrompter):
 class FewShotPrompter(DefaultPrompter):
 
     def __init__(self):
-        self.template_path: str = './prompts/prompts_few_shot.tsv'
+        self.template_path: str = '../prompts/prompts_few_shot.tsv'
         print("Using few shot prompting...")
 
 
@@ -67,16 +67,17 @@ class FewShotPrompter(DefaultPrompter):
         prompts = self._get_few_shot_template(instruction=instruction_format)
         # add the question at hand
         question = self._create_question(instruction_format, premise, hypothesis)
-        prompts.append(question)
+        prompts.extend(question)
         return prompts
 
 
 class EvaluationPrompter(ZeroShotPompter):
 
     def create_evaluation_prompt(self, question: str, model_answer: str) -> List[Dict[str, str]]:
-        prompt = f'Evaluate if this model answer concludes to \\
-            (a) entailment, (b) neutrality, (c) contradiction. \\
-            {model_answer}'
+        prompt = f"""Model Answer: \"{model_answer}\". 
+            Evaluate if this model answer concludes to (a) entailment, (b) neutrality, (c) contradiction. 
+            Pick only one option between (a), (b) and (c), and give your answer as a letter inside the parentheses.
+        """
         return [{"role": "user", "content": prompt}]
 
 

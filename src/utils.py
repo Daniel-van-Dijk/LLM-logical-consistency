@@ -2,7 +2,7 @@ import re
 
 
 def validate_args(args):
-    if args.evalution_type == 'logprobs' and args.prompt_template != 'mcq':
+    if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
         raise ValueError("Log probability evaluation works only on MCQ prompt inputs.")
 
 

@@ -18,13 +18,13 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt_template', default='supported', 
+    parser.add_argument('--prompt-template', default='supported', type=str,
                         choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
                         help='choose prompt template')
-    parser.add_argument('--prompt_type', default='zero_shot', 
+    parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'few_shot'],
                         help='choose prompt type')
-    parser.add_argument('--evalution_type', default='regex', type=str, choices=['regex', 'logprobs'])
+    parser.add_argument('--evaluation_type', default='regex', type=str, choices=['regex', 'logprobs'])
     return parser
 
 
