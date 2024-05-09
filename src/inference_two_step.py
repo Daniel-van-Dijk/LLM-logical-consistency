@@ -1,4 +1,7 @@
 import argparse
+
+from typing import List
+
 from models.hermes13B import Hermes13B
 from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
@@ -6,7 +9,12 @@ from models.starling7B import Starling7B
 
 from preprocess import *
 from utils import *
-from prompts import get_few_shot_template
+from prompters import (
+    create_prompter_from_str, 
+    DefaultPrompter, 
+    EvaluationPrompter
+)
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
@@ -17,14 +25,13 @@ def get_args_parser():
     parser.add_argument('--prompt-template', default='supported', 
                         choices=['entailment', 'truth', 'supported', 'logically_follow', 'multiple_choice'], 
                         help='choose prompt template')
-    parser.add_argument('--prompt_type', default='zero_shot_cot', 
+    parser.add_argument('--prompt_type', default='zero_shot', 
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
-                        help= 'choose prompt type' )
+                        help='choose prompt type' )
     return parser
 
 
-
-def run_tasks(tasks, model_name, prompt_style, prompt_type):
+def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
     # TODO: design prompt with CoT
     # TODO: zero-shot vs few-shot
     # TODO: improve templates based on answer variations of model
@@ -46,58 +53,67 @@ def run_tasks(tasks, model_name, prompt_style, prompt_type):
     elif model_name == 'starling7B':
         model = Starling7B()
 
+    # Evaluator is ALWAYS Llama3 
+    evaluation_model = LLama3_8B()
+
+    # Prompters
+    prompter: DefaultPrompter = create_prompter_from_str(prompt_type)
+    evaluation_prompter = EvaluationPrompter()
+
     total_accuracy: float = 0.
+    
     for task in tasks:
         file_path = f'../data/{task}.tsv'
         processed_data = process_tsv(file_path)
         answers = []
-        for entry in processed_data:  
-            if prompt_type == 'zero_shot_cot':
-                instruction_1 = f'Q: Premise- "{entry[1]}" Hypothesis- "{entry[2]}" {instruction_format}? A: Lets think step by step '
-                print("Prompt instruction 1: ", instruction_1)
-                message_1 = [{"role": "user", "content": instruction_1}]
-                output_1 = model.inference_for_prompt(prompt=message_1)
-                instruction_2 = instruction_1 + output_1 + 'Therefore the answer among entailment, contradiction and neutral is: '
-                print("-------------------------------------------------")
-                print("Prompt instruction 2: ", instruction_2)
-                message_2 = [{"role": "user", "content": instruction_2}]
-                output = model.inference_for_prompt(prompt=message_2)
-                print("------------------------------------------------")
-                print(f"Model output: {output}")
-            if prompt_type == 'few_shot':
-                message = get_few_shot_template(instruction=instruction_format)
-                output = model.inference_for_prompt(prompt=message)
-                print("------------------------------------------------")
-                print(f"Model output: {output}")
-            else:
-                instruction = f'Premise: "{entry[1]}" Hypothesis: "{entry[2]}" {instruction_format}'
-                print("Prompt: ", instruction)
-                prompt = [{"role": "user", "content": instruction}]
-                output = model.inference_for_prompt(prompt=prompt)
-                print(f"Model output: {output}")
-                
-            answers.append((instruction, output, entry[0]))
+        for entry in processed_data:
+            # ---------------- #
+            # -- First Step -- #
+            # ---------------- #
+            instruction = prompter.create_instruction(
+                premise=entry[1], 
+                hypothesis=entry[2], 
+                instruction_format=instruction_format
+            )
+            print("Prompt: ", instruction)
+            output = model.inference_for_prompt(prompt=instruction)
+            
+            question_asked: str = instruction[-1]["content"]
+            
+            # ----------------- #
+            # -- Second Step -- #
+            # ----------------- #
+            instruction = evaluation_prompter.create_evaluation_prompt(
+                question=question_asked,
+                model_answer=output
+            )
+            print("Prompt: ", instruction)
+            output = evaluation_model.inference_for_prompt(prompt=instruction)
+            print(f"Model output: {output}")
+
+            answers.append((question_asked, output, entry[0]))
         
-        if prompt_style in ['entailment', 'truth', 'supported', 'logically_follow']:
-            # TODO: improve parsing output to evaluate
-            results, accuracy, _, _, _ = parse_yes_no_output(answers)
-        elif prompt_style == 'multiple_choice':
-            results, accuracy, _, _, _ = parse_multiple_choice(answers)
-        else:
-            print("Define parse function for other prompt templates")
-            exit()
+        # --------------------------------------------- #
+        # In Two-Step LLM QA, the answer is always MCQ  #
+        # --------------------------------------------- #
+        results, accuracy, _, _, _ = parse_multiple_choice(answers)
         
         print(f'Accuracy for {task}: {accuracy:.2%}')
         for result in results:
             print(result) 
+        
         total_accuracy += accuracy
+    
     average_accuracy = total_accuracy / len(tasks)
 
     return average_accuracy
 
+
+
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
+    validate_args(args)
     print(f'Model: {args.model}')
     average_accuracy = run_tasks(args.task, args.model, args.prompt_template, args.prompt_type)
     print('average accuracy: ', average_accuracy)
