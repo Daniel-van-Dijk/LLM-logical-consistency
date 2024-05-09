@@ -74,10 +74,7 @@ class FewShotPrompter(DefaultPrompter):
 class EvaluationPrompter(ZeroShotPompter):
 
     def create_evaluation_prompt(self, question: str, model_answer: str) -> List[Dict[str, str]]:
-        prompt = f"""Model Answer: \"{model_answer}\". 
-            Evaluate if this model answer concludes to (a) entailment, (b) neutrality, (c) contradiction. 
-            Pick only one option between (a), (b) and (c), and give your answer as a letter inside the parentheses.
-        """
+        prompt = f"Student Answer: \"{model_answer}\". Did the student pick (a) entailment, (b) neutrality or (c) contradiction? pick one and reply with one word."
         return [{"role": "user", "content": prompt}]
 
 
