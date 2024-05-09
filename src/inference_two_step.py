@@ -22,8 +22,8 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', 
-                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'multiple_choice'], 
+    parser.add_argument('--prompt_template', default='supported', 
+                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
                         help='choose prompt template')
     parser.add_argument('--prompt_type', default='zero_shot', 
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
@@ -40,7 +40,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
         'logically_follow': 'Does the hypothesis logically follow from the premise?',
         'truth': 'Given the premise, is the hypothesis true?',
         'supported': 'Is the hypothesis supported by the premise?',
-        'multiple_choice': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
+        'mcq': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
     }
     instruction_format = prompt_templates[prompt_style]
 
@@ -61,7 +61,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
     evaluation_prompter = EvaluationPrompter()
 
     total_accuracy: float = 0.
-    
+
     for task in tasks:
         file_path = f'../data/{task}.tsv'
         processed_data = process_tsv(file_path)
