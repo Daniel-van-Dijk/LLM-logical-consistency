@@ -70,6 +70,35 @@ class FewShotPrompter(DefaultPrompter):
         prompts.extend(question)
         return prompts
 
+class FewShotCOTPrompter(DefaultPrompter):
+
+    def __init__(self):
+        self.template_path: str = '../prompts/prompts_few_shot_cot.tsv'
+        print("Using few shot prompting with Chain-of-Thought...")
+
+
+    def _get_few_shot_template(self, instruction: str) -> List[Dict[str, str]]:
+
+        template = []
+        with open(self.template_path, 'r') as file:
+            reader = csv.reader(file, delimiter='\t')
+            for label, premise, hypothesis, instruction_ex, chain_of_thought, answer in reader:
+                content = f"{premise} {hypothesis} {instruction_ex}"
+                template.append({"role": "user", "content": content})
+                template.append({"role": "assistant", "content": f"{chain_of_thought} {answer}"})
+    
+        return template
+
+
+    def create_instruction(self, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        # add few shot prompts
+        prompts = self._get_few_shot_template(instruction=instruction_format)
+        # add the question at hand
+        question = self._create_question(instruction_format, premise, hypothesis)
+        prompts.extend(question)
+        return prompts
+
+
 
 class EvaluationPrompter(ZeroShotPompter):
 
