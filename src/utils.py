@@ -1,6 +1,11 @@
 import re
 
 
+def validate_args(args):
+    if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
+        raise ValueError("Log probability evaluation works only on MCQ prompt inputs.")
+
+
 def parse_yes_no_output(answers_labels):
     """ 
     Function where answer is expected to be answerable with "yes" or "no"
