@@ -32,9 +32,7 @@ def get_args_parser():
 
 
 def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
-    # TODO: design prompt with CoT
-    # TODO: zero-shot vs few-shot
-    # TODO: improve templates based on answer variations of model
+    # TODO: REMOVE non MCQ
     prompt_templates = {
         'entailment': 'Does the hypothesis entail or contradict from the premise?',
         'logically_follow': 'Does the hypothesis logically follow from the premise?',
@@ -54,6 +52,8 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
         model = Starling7B()
 
     # Evaluator is ALWAYS Llama3 
+    # TODO: currently two models do not fit in 20GB gpu memory
+    # we will need to add quantization
     evaluation_model = model
 
     # Prompters
