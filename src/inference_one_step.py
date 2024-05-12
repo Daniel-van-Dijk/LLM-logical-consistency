@@ -22,16 +22,14 @@ def get_args_parser():
                         choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
                         help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
-                        choices=['zero_shot', 'few_shot'],
+                        choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
     parser.add_argument('--evaluation_type', default='regex', type=str, choices=['regex', 'logprobs'])
     return parser
 
 
 def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
-    # TODO: design prompt with CoT
-    # TODO: zero-shot vs few-shot
-    # TODO: improve templates based on answer variations of model
+    # TODO: REMOVE non MCQ
     prompt_templates = {
         # 'entailment': 'Does the hypothesis entail or contradict from the premise?',
         # 'logically_follow': 'Does the hypothesis logically follow from the premise?',
