@@ -49,7 +49,7 @@ class FewShotPrompter(DefaultPrompter):
         print("Using few shot prompting...")
 
 
-    def _get_few_shot_template(self, instruction: str) -> List[Dict[str, str]]:
+    def _get_few_shot_cot_template(self, instruction: str) -> List[Dict[str, str]]:
 
         template = []
         with open(self.template_path, 'r') as file:
@@ -64,7 +64,7 @@ class FewShotPrompter(DefaultPrompter):
 
     def create_instruction(self, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
         # add few shot prompts
-        prompts = self._get_few_shot_template(instruction=instruction_format)
+        prompts = self._get_few_shot_cot_template(instruction=instruction_format)
         # add the question at hand
         question = self._create_question(instruction_format, premise, hypothesis)
         prompts.extend(question)

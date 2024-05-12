@@ -28,7 +28,9 @@ class Hermes13B:
         generated_ids = self.model.generate(
             encoded_prompt,
             max_new_tokens=500,
-            do_sample=True
+            do_sample=True,
+            output_logits = True,
+            return_dict_in_generate=True
         )
 
         model_output_ids = generated_ids[0][prompt_length:]
