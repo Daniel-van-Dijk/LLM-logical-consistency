@@ -76,7 +76,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 instruction_format=instruction_format
             )
             
-            print('Question number: {num}')
+            print(f'Question number: {num}')
             print("Prompt: ", instruction)
             output = model.inference_for_prompt(prompt=instruction)
             print(f"Model output: {output}")
