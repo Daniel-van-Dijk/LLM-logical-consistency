@@ -1,8 +1,10 @@
 import re
+import numpy as np
+from scipy.special import softmax
 
 
 def validate_args(args):
-    if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
+    if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq1':
         raise ValueError("Log probability evaluation works only on MCQ prompt inputs.")
 
 
@@ -95,29 +97,33 @@ def parse_multiple_choice(answers_labels):
 
 
 def compute_logprobs(answers):
-    correct = []
+    correct_answers = []  
     all_probs = []
-    choices = ["(a)", "(b)", "(c)", "(d)"]  
+    choices = ["A", "B", "C"]  
 
-    for question, output, correct_answer in answers:
+    for question, output, generated_dict, correct_answer in answers:
         lprobs = []
         for ans in choices:
-            try:
-                lprobs.append(output["choices"][0]["logprobs"]["top_logprobs"][-1][ans])
-            except:
+            print("output[0]", output[0])
+            print("ans", ans)
+            print("generated_dict.logits[0]", generated_dict.logits[0])
+            if output[0] == ans:
+                lprobs.append(generated_dict.logits[0])
+            else:
                 print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
                 lprobs.append(-100)
-        pred = {0: "(a)", 1: "(b)", 2: "(c)", 3: "(d)"}[np.argmax(lprobs)]
+        # THIS gives error
+        pred = {0: "A", 1: "B", 2: "C"}[np.argmax(lprobs)]
         probs = softmax(np.array(lprobs))
 
-        correct = pred == correct_answer
-        correct.append(correct)
+        is_correct = pred == correct_answer 
+        correct_answers.append(is_correct) 
         all_probs.append(probs)
 
-    acc = np.mean(correct)
-    correct = np.array(correct)
+    acc = np.mean(correct_answers) 
+    correct_answers = np.array(correct_answers) 
     all_probs = np.array(all_probs)
 
     print("Average accuracy {:.3f}".format(acc))
 
-    return correct, acc, all_probs
+    return correct_answers, acc, all_probs  

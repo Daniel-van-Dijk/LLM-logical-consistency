@@ -18,8 +18,8 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', type=str,
-                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
+    parser.add_argument('--prompt-template', default='mcq1', type=str,
+                        choices=['mcq_letters', 'mcq_words'], 
                         help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
@@ -28,15 +28,15 @@ def get_args_parser():
     return parser
 
 
-def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
+def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str, evaluation_type: str):
     # TODO: REMOVE non MCQ
     prompt_templates = {
-        # 'entailment': 'Does the hypothesis entail or contradict from the premise?',
-        # 'logically_follow': 'Does the hypothesis logically follow from the premise?',
-        # 'truth': 'Given the premise, is the hypothesis true?',
-        # 'supported': 'Is the hypothesis supported by the premise?',
-        'mcq_words': 'Given the premise, is the hypothesis entailed in the premise, contradicted by the premise, or is the relationship between the two neutral? Clearly indicate the answer by inclusing the word "entailment", "contradiction" or "neutral" in your response.'
-        'mcq_letters': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
+        'mcq1': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. entailment, B. neutral or C. contradiction ? \n Answer: ',
+        'mcq2': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. entailment, B. contradiction or C. neutral ? \n Answer: ',
+        'mcq3': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. neutral, B. entailment or C. contradiction ? \n Answer: ',
+        'mcq4': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. neutral, B. contradiction or C. entailment ? \n Answer: ',
+        'mcq5': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. contradiction, B. neutral or C. entailment ? \n Answer: ',
+        'mcq6': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. contradiction, B. entailment or C. neutral ? \n Answer: '
     }
     instruction_format: str = prompt_templates[prompt_style]
 
@@ -67,21 +67,21 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 instruction_format=instruction_format
             )
             print("Prompt: ", instruction)
-            output = model.inference_for_prompt(prompt=instruction)
+            output, generated_dict = model.inference_for_prompt(prompt=instruction)
             print(f"Model output: {output}")
             
             question_asked: str = instruction[-1]["content"]
-            answers.append((question_asked, output, entry[0]))
+            answers.append((question_asked, output, generated_dict, entry[0]))
         
         # TODO: ADD log prob evaluation!!!!!!
-        if evaluation_style == 'logprobs':
-            if prompt_style == 'mcq_words' or prompt_style == 'mcq_letters':
+        if evaluation_type == 'logprobs':
+            if prompt_style == 'mcq1' :
                 results, accuracy, all_probs = compute_logprobs(answers)
             else:
                 print("Define parse function for other prompt templates")
                 exit()
         else: 
-            if prompt_style == 'mcq_words' or prompt_style == 'mcq_letters':
+            if prompt_style == 'mcq1':
                 # TODO: improve parsing output to evaluate
                 # results, accuracy, _, _, _ = parse_yes_no_output(answers)
             # elif prompt_style == 'mcq_letters':
@@ -105,5 +105,5 @@ if __name__ == "__main__":
     args = args.parse_args()
     validate_args(args)
     print(f'Model: {args.model}')
-    average_accuracy = run_tasks(args.task, args.model, args.prompt_template, args.prompt_type)
+    average_accuracy = run_tasks(args.task, args.model, args.prompt_template, args.prompt_type, args.evaluation_type)
     print('Average accuracy: ', average_accuracy)
