@@ -18,8 +18,8 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', type=str,
-                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
+    parser.add_argument('--prompt-template', default='mcq1', type=str,
+                        choices=['mcq1', 'mcq2', 'mcq3', 'mcq4', 'mcq5', 'mcq6'],
                         help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
@@ -28,14 +28,15 @@ def get_args_parser():
     return parser
 
 
-def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
+def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str, evaluation_type: str):
     # TODO: REMOVE non MCQ
     prompt_templates = {
-        'entailment': 'Does the hypothesis entail or contradict from the premise?',
-        'logically_follow': 'Does the hypothesis logically follow from the premise?',
-        'truth': 'Given the premise, is the hypothesis true?',
-        'supported': 'Is the hypothesis supported by the premise?',
-        'mcq': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
+        'mcq1': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. entailment, B. neutral or C. contradiction ? \n Answer: ',
+        'mcq2': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. entailment, B. contradiction or C. neutral ? \n Answer: ',
+        'mcq3': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. neutral, B. entailment or C. contradiction ? \n Answer: ',
+        'mcq4': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. neutral, B. contradiction or C. entailment ? \n Answer: ',
+        'mcq5': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. contradiction, B. neutral or C. entailment ? \n Answer: ',
+        'mcq6': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Given the premise provided, is the hypothesis: A. contradiction, B. entailment or C. neutral ? \n Answer: '
     }
     instruction_format: str = prompt_templates[prompt_style]
 
@@ -66,21 +67,32 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 instruction_format=instruction_format
             )
             print("Prompt: ", instruction)
-            output = model.inference_for_prompt(prompt=instruction)
+            output, generated_dict = model.inference_for_prompt(prompt=instruction)
             print(f"Model output: {output}")
             
             question_asked: str = instruction[-1]["content"]
-            answers.append((question_asked, output, entry[0]))
+            answers.append((question_asked, output, generated_dict, entry[0]))
         
         # TODO: ADD log prob evaluation!!!!!!
-        if prompt_style in ['entailment', 'truth', 'supported', 'logically_follow']:
-            # TODO: improve parsing output to evaluate
-            results, accuracy, _, _, _ = parse_yes_no_output(answers)
-        elif prompt_style == 'mcq':
-            results, accuracy, _, _, _ = parse_multiple_choice(answers)
-        else:
-            print("Define parse function for other prompt templates")
-            exit()
+        if evaluation_type == 'logprobs':
+            if prompt_style == 'mcq1' or  prompt_style == 'mcq2' prompt_style == 'mcq3' prompt_style == 'mcq4' prompt_style == 'mcq5' prompt_style == 'mcq6':
+                labels = ["A", "B", "C"]
+                choices_ids = []
+                for label in labels:
+                    choices_ids.append(model.tokenizer.convert_tokens_to_ids(label))
+                results, accuracy, all_probs = compute_logprobs(answers, choices_ids)
+            else:
+                print("Define parse function for other prompt templates")
+                exit()
+        else: 
+            if prompt_style == 'mcq1' or  prompt_style == 'mcq2' prompt_style == 'mcq3' prompt_style == 'mcq4' prompt_style == 'mcq5' prompt_style == 'mcq6':
+                # TODO: improve parsing output to evaluate
+                # results, accuracy, _, _, _ = parse_yes_no_output(answers)
+            # elif prompt_style == 'mcq_letters':
+                results, accuracy, _, _, _ = parse_multiple_choice(answers)
+            else:
+                print("Define parse function for other prompt templates")
+                exit()
         
         print(f'Accuracy for {task}: {accuracy:.2%}')
         for result in results:

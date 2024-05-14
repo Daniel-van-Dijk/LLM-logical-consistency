@@ -26,8 +26,8 @@ def get_args_parser():
                  'numerical-1', 'numerical-14']
     parser.add_argument('--task', default=task_list, type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', type=str,
-                        choices=['mcq'], 
+    parser.add_argument('--prompt-template', default='mcq1', type=str,
+                        choices=['mcq1', 'mcq2', 'mcq3', 'mcq4', 'mcq5', 'mcq6'], 
                         help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot_collect', type=str,
                         choices=['zero_shot_collect'],

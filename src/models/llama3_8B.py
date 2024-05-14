@@ -38,7 +38,9 @@ class LLama3_8B:
             do_sample=True,
             temperature=0.6,
             top_p=0.9,
+            output_logits = True,
+            return_dict_in_generate=True
         )
         response = outputs[0][input_ids.shape[-1]:]
         output = self.tokenizer.decode(response, skip_special_tokens=True)
-        return output
+        return output, generated_dict
