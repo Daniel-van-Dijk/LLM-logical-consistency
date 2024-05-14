@@ -40,6 +40,18 @@ class ZeroShotPompter(DefaultPrompter):
     def create_instruction(self, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
         return self._create_question(instruction_format, premise, hypothesis)
 
+class CollectDataPrompter(ABC):
+
+    def __init__(self):
+        print("Collecting data for finetuning...")
+    
+    def _create_question(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        instruction = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
+        return [{"role": "user", "content": instruction}]
+
+
+    def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        return self._create_question(general_instruction, instruction_format, premise, hypothesis)
 
 
 class FewShotPrompter(DefaultPrompter):
@@ -113,5 +125,7 @@ def create_prompter_from_str(prompter: str) -> DefaultPrompter:
         return ZeroShotPompter()
     elif prompter == "few_shot":
         return FewShotPrompter()
+    elif prompter == 'zero_shot_collect':
+        return CollectDataPrompter()
     else:
         raise NotImplementedError(f"Unknown prompter: <{prompter}>")
