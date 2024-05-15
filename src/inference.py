@@ -9,11 +9,7 @@ from models.starling7B import Starling7B
 
 from preprocess import *
 from utils import *
-from prompters import (
-    create_prompter_from_str, 
-    DefaultPrompter, 
-    EvaluationPrompter
-)
+from prompters import create_prompter_from_str, DefaultPrompter
 
 
 def get_args_parser():
@@ -27,11 +23,11 @@ def get_args_parser():
                         help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
-                        help='choose prompt type' )
+                        help='choose prompt type')
     return parser
 
 
-def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str):
+def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str) -> List:
     # TODO: REMOVE non MCQ
     prompt_templates = {
         'entailment': 'Does the hypothesis entail or contradict from the premise?',
@@ -40,7 +36,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
         'supported': 'Is the hypothesis supported by the premise?',
         'mcq': 'Given the premise, is the hypothesis (a) entailment, (b) neutral, or (c) contradiction?'
     }
-    instruction_format = prompt_templates[prompt_style]
+    instruction_format: str = prompt_templates[prompt_style]
 
     if model_name == 'hermes13B':
         model = Hermes13B()
@@ -51,19 +47,12 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
     elif model_name == 'starling7B':
         model = Starling7B()
 
-    # Evaluator is ALWAYS Llama3 
-    # TODO: currently two models do not fit in 20GB gpu memory
-    # we will need to add quantization
-    evaluation_model = model
-
-    # Prompters
     prompter: DefaultPrompter = create_prompter_from_str(prompt_type)
-    evaluation_prompter = EvaluationPrompter()
-
-    total_accuracy: float = 0.
 
     for task in tasks:
         file_path = f'../data/{task}.tsv'
+        file_output_path = f'../predictions/{model_name}_{prompt_style}_{prompt_type}_{task}.tsv'
+
         processed_data = process_tsv(file_path)
         answers = []
         for entry in processed_data:
@@ -77,42 +66,26 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
             )
             print("Prompt: ", instruction)
             output = model.inference_for_prompt(prompt=instruction)
+
+            # post process
+            output = output.replace('\n', ' ').replace('\r', '')
+            print(f"Model output: {output}")
             
             question_asked: str = instruction[-1]["content"]
-            
-            # ----------------- #
-            # -- Second Step -- #
-            # ----------------- #
-            instruction = evaluation_prompter.create_evaluation_prompt(
-                question=question_asked,
-                model_answer=output
-            )
-            print("Prompt: ", instruction)
-            output = evaluation_model.inference_for_prompt(prompt=instruction)
-            print(f"Model output: {output}")
-
             answers.append((question_asked, output, entry[0]))
         
-        # --------------------------------------------- #
-        # In Two-Step LLM QA, the answer is always MCQ  #
-        # --------------------------------------------- #
-        results, accuracy, _, _, _ = parse_multiple_choice(answers)
-        
-        print(f'Accuracy for {task}: {accuracy:.2%}')
-        for result in results:
-            print(result) 
-        
-        total_accuracy += accuracy
-    
-    average_accuracy = total_accuracy / len(tasks)
-
-    return average_accuracy
-
+        # write answers in tsv file
+        write_tsv(file_output_path, answers)
 
 
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
-    average_accuracy = run_tasks(args.task, args.model, args.prompt_template, args.prompt_type)
-    print('average accuracy: ', average_accuracy)
+    average_accuracy = run_tasks(
+        args.task, 
+        args.model, 
+        args.prompt_template, 
+        args.prompt_type
+    )
+    print('Average accuracy: ', average_accuracy)
