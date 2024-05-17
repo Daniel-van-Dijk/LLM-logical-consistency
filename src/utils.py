@@ -24,3 +24,25 @@ def check_if_file_exists(file_path: str) -> bool:
         return True
     
     return False
+
+
+def process_batch(model, batched_prompts, batched_mappings, task, num_processed, results):
+    outputs = model.inference_for_prompt(prompts=batched_prompts)
+    for i, output in enumerate(outputs):
+        num_processed += 1
+        question_asked: str = batched_prompts[i]
+        print(question_asked)
+        result_entry = {
+            "task": task,
+            "question_number": num_processed,
+            "question": question_asked[-1]['content'],
+            "answer": output,
+            "labels": batched_mappings[i],
+            "question_and_answer": f"{question_asked}\n\n{output}",
+            "instruction_and_answer": f"{batched_mappings[i]}\n\n{output}"
+        }
+        results.append(result_entry)
+        print(result_entry)
+        print('\n')
+    print(f'processed {num_processed} entries')
+    return results, num_processed
