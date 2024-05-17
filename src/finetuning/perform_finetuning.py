@@ -14,6 +14,7 @@ from typing import List, Dict
 import torch
 from huggingface_hub import login
 from mistral7B_finetune import Mistral7B_ft
+import argparse
 
 
 def get_args_parser():
@@ -52,7 +53,7 @@ if __name__ == "__main__":
 
     #wandb setup
 
-    wandb.login(key = "215bb68e0f98b16ed197b9d03269263337838420")
+    wandb.login(key = "add_here")
 
     wandb_project = "atcs_finetune"
 
