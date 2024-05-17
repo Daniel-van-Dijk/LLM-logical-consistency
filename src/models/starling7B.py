@@ -17,13 +17,18 @@ class Starling7B:
         input_ids = self.tokenizer(single_turn_prompt, return_tensors="pt").input_ids
         prompt_length = input_ids.size(1)
         input_ids = input_ids.to(self.model.device)
-        outputs = self.model.generate(
+        generated_dict = self.model.generate(
             input_ids,
             max_length=256,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
+            output_logits = True, 
+            return_dict_in_generate=True
         )
-        response_ids = outputs[0]
-        response_text = self.tokenizer.decode(response_ids[prompt_length:], skip_special_tokens=True)
-        return response_text
+        attributes = dir(generated_dict)
+        attributes = [a for a in attributes if not a.startswith('__')]
 
+        response_ids = generated_dict.sequences[0]
+        response_text = self.tokenizer.decode(response_ids[prompt_length:], skip_special_tokens=True)
+        
+        return response_text, generated_dict

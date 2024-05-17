@@ -9,7 +9,7 @@ from models.starling7B import Starling7B
 
 from preprocess import *
 from utils import *
-from evaluators import RegexEvaluator
+from evaluators import RegexEvaluator, LogprbsEvaluator
 from prompters import EvaluationPrompter
 
 
@@ -35,6 +35,14 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
 
     # Evaluator is ALWAYS Llama3 
     evaluation_model = LLama3_8B()
+    if model_name == 'hermes13B':
+        model = Hermes13B()
+    elif model_name == 'mistral7B':
+        model = Mistral7B()
+    elif model_name == 'llama3_8B':
+        model = LLama3_8B()
+    elif model_name == 'starling7B':
+        model = Starling7B()
 
     # Prompters
     evaluation_prompter = EvaluationPrompter()
@@ -77,8 +85,11 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
             results, accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(answers)
 
         elif evaluation_type == 'logprob':
-            # TODO: waiting for this implementation
-            pass
+            labels = ["A", "B", "C"]
+            choices_ids = []
+            for label in labels:
+                choices_ids.append(model.tokenizer.convert_tokens_to_ids(label))
+            results, accuracy, all_probs = LogprbsEvaluator.compute_logprobs(answers, choices_ids)
         else:
             raise NotImplementedError(f"Evaluation type: {evaluation_type} not implemented...")
         

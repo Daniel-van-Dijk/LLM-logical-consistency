@@ -93,3 +93,50 @@ class RegexEvaluator:
         
         return results, accuracy, neutrals, entailments, contradictions
 
+class LogprbsEvaluator:
+
+    @staticmethod
+    def compute_logprobs(answers, choices_ids):
+        correct_answers = []  
+        all_probs = []
+        choices = ["A", "B", "C"]  
+
+        for question, output, generated_dict, correct_answer in answers:
+            lprobs = []
+            for ans, choice_id in zip(choices, choices_ids):
+                try:
+                    lprobs.append(generated_dict.logits[0][0][choice_id])
+                except:
+                    # If an option is not in the first 1000, set its logit to -100
+                    print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
+                    lprobs.append(-100)
+
+            candidate_logits = torch.tensor(lprobs).to(torch.float32)
+            print("candidate_logits:", candidate_logits)
+            probs = (
+                torch.nn.functional.softmax(
+                    candidate_logits,
+                    dim=0,
+                )
+                .detach()
+                .cpu()
+                .numpy()
+            )
+            print("probs array:", probs)
+            pred = {i: k for i, k in enumerate(["A", "B", "C"])}[np.argmax(probs)]
+            print("pred:", pred)
+            print("correct_answer: ", correct_answer )
+            correct_answer = {k: v for k, v in zip(["entailment", "neutral", "contradiction"], ["A", "B", "C"])}[correct_answer]
+            print("correct_answer: ", correct_answer )
+
+            is_correct = pred == correct_answer 
+            correct_answers.append(is_correct) 
+            all_probs.append(probs)
+
+        acc = np.mean(correct_answers) 
+        correct_answers = np.array(correct_answers) 
+        all_probs = np.array(all_probs)
+
+        print("Average accuracy {:.3f}".format(acc))
+
+        return correct_answers, acc, all_probs  
