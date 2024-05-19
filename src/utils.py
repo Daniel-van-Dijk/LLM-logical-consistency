@@ -54,7 +54,7 @@ def process_batch(model, batched_prompts, batched_mappings, batched_labels, task
                 label_mapping['B'] : logits[model.tokenizer.convert_tokens_to_ids("B")],
                 label_mapping['C'] : logits[model.tokenizer.convert_tokens_to_ids("C")]
             },
-            "labels": label_mapping,
+            "label_mapping": label_mapping,
             "question_and_answer": f"{question_asked}\n\n{output}",
             "instruction_and_answer": f"{label_mapping}\n\n{output}",
             "label" : label
