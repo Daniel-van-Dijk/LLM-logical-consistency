@@ -2,6 +2,8 @@ import csv
 
 from typing import List
 from pathlib import Path
+import torch
+import torch.nn.functional as F
 
 
 def validate_args(args):
@@ -32,7 +34,6 @@ def process_batch(model, batched_prompts, batched_mappings, task, num_processed,
         num_processed += 1
         question_asked = batched_prompts[i]
         label_mapping = batched_mappings[i]
-
         result_entry = {
             "task": task,
             "question_number": num_processed,
@@ -43,12 +44,15 @@ def process_batch(model, batched_prompts, batched_mappings, task, num_processed,
                 "B": logits[model.tokenizer.convert_tokens_to_ids("B")],  
                 "C": logits[model.tokenizer.convert_tokens_to_ids("C")]
             },
+            "logits_mapped": {
+                label_mapping['A'] : logits[model.tokenizer.convert_tokens_to_ids("A")],
+                label_mapping['B'] : logits[model.tokenizer.convert_tokens_to_ids("B")],
+                label_mapping['C'] : logits[model.tokenizer.convert_tokens_to_ids("C")]
+            },
             "labels": label_mapping,
             "question_and_answer": f"{question_asked}\n\n{output}",
             "instruction_and_answer": f"{label_mapping}\n\n{output}"
         }
         results.append(result_entry)
-        print(result_entry)
-        print('\n')
-    print(f'processed {num_processed} entries')
+    print(f'processed {num_processed} entries in total')
     return results, num_processed
