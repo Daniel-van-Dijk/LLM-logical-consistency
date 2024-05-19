@@ -20,6 +20,6 @@ class Mistral7B:
         encodeds = self.tokenizer.apply_chat_template(prompt, return_tensors="pt", padding=True)
         prompt_length = encodeds.size(1)
         model_inputs = encodeds.to(self.device)
-        generated_ids = self.model.generate(model_inputs, max_new_tokens=300, do_sample=True, pad_token_id=self.tokenizer.eos_token_id, output_logits = True, return_dict_in_generate=True)
+        generated_ids = self.model.generate(model_inputs, max_new_tokens=300, pad_token_id=self.tokenizer.eos_token_id, output_logits = True, return_dict_in_generate=True)
         decoded = self.tokenizer.decode(generated_ids[0][prompt_length:])
         return decoded, generated_ids

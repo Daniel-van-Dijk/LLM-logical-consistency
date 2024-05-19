@@ -52,6 +52,19 @@ class CollectDataPrompter(ABC):
 
     def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
         return self._create_question(general_instruction, instruction_format, premise, hypothesis)
+    
+class ZeroShotPompter(ABC):
+
+    def __init__(self):
+        print("Using zero shot prompting...")
+    
+    def _create_question(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        instruction = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
+        return [{"role": "user", "content": instruction}]
+
+
+    def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        return self._create_question(general_instruction, instruction_format, premise, hypothesis)
 
 
 class FewShotPrompter(DefaultPrompter):
