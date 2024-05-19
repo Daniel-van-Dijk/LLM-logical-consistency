@@ -20,12 +20,12 @@ def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI inference', add_help=False)
     parser.add_argument('--model', default='tinytest', type=str, metavar='MODEL',
                         help='model to run inference on')
-    parser.add_argument('--task', default=['temporal-1', 'temporal-2'], type=str, metavar='TASK', nargs='+',
+    parser.add_argument('--task', default=['temporal-15', 'temporal-2'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
-    parser.add_argument('--output_dir', default='predictions', type=str, metavar='OUTPUT_DIR',
+    parser.add_argument('--output_dir', default='../predictions', type=str, metavar='OUTPUT_DIR',
                         help='dir to store data')
     parser.add_argument('--batch_size', default=4, type=int, metavar='BATCH_SIZE',
                         help='batch size for inference')
@@ -67,16 +67,17 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     elif model_name == 'tinytest':
         model = TinyTest()
 
-    results = []
-
+    
+    os.makedirs(output_dir, exist_ok=True)
     for task in tasks:
+        results = []
         print('\n\n\n')
         print('==========================================')
         print(f'Collecting predictions for task: {task}')
-        file_path = f'../data/{task}.tsv'
+        file_path = f'../data/data/{task}.tsv'
         processed_data = process_tsv(file_path)
 
-        batched_prompts, batched_mappings = [], []
+        batched_prompts, batched_mappings, batched_labels = [], [], []
         num_processed = 0
         for entry in processed_data[:15]:
             # Pick random shuffle of answer options to avoid selection bias and store corresponding labels
@@ -92,24 +93,23 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
             )
             batched_prompts.append(instruction)
             batched_mappings.append(label_mapping)
+            batched_labels.append(entry[0])
 
             # Fill batch with randomly shuffled prompts
             if len(batched_prompts) == batch_size:
-                results, num_processed = process_batch(model, batched_prompts, batched_mappings, task, num_processed, results)
+                results, num_processed = process_batch(model, batched_prompts, batched_mappings, batched_labels, task, num_processed, results)
                 # empty batch again
                 batched_prompts, batched_mappings = [], []
 
         # process potential remaining samples
         if batched_prompts:
-            results, num_processed = process_batch(model, batched_prompts, batched_mappings, task, num_processed, results)
+            results, num_processed = process_batch(model, batched_prompts, batched_mappings, batched_labels, task, num_processed, results)
 
-    print(len(results))
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = f"{output_dir}/results_{model_name}.json"
-    with open(output_path, 'w') as f:
-        json.dump(results, f, indent=4)
+        print(len(results))
 
-    print(f"Results saved to {output_path}")
+        output_path = f'{output_dir}/{model_name}_{prompt_type}_{task}.json'
+        with open(output_path, 'w') as f:
+            json.dump(results, f, indent=4)
     end_time = time.time()
     elapsed_time = (end_time - start_time) / 60
     print(f"Total time taken: {elapsed_time} minutes")
