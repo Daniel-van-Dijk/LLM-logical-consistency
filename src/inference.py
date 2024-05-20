@@ -13,6 +13,7 @@ from utils import *
 from prompters import *
 import time
 import json
+from datetime import datetime
 
 
 
@@ -20,20 +21,22 @@ def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI inference', add_help=False)
     parser.add_argument('--model', default='tinytest', type=str, metavar='MODEL',
                         help='model to run inference on')
-    parser.add_argument('--task', default=['temporal-15', 'temporal-2'], type=str, metavar='TASK', nargs='+',
+    parser.add_argument('--task', default=['temporal-1', 'temporal-2'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
     parser.add_argument('--output_dir', default='../predictions', type=str, metavar='OUTPUT_DIR',
                         help='dir to store data')
-    parser.add_argument('--batch_size', default=4, type=int, metavar='BATCH_SIZE',
+    parser.add_argument('--batch_size', default=32, type=int, metavar='BATCH_SIZE',
                         help='batch size for inference')
     return parser
 
 
 
+
 def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: int, output_dir: str) -> List:
+    print("Run started at", datetime.now())
     start_time = time.time()
     general_instruction = 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter.'
     prompt_templates = {
@@ -67,19 +70,18 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     elif model_name == 'tinytest':
         model = TinyTest()
 
-    
     os.makedirs(output_dir, exist_ok=True)
     for task in tasks:
         results = []
         print('\n\n\n')
         print('==========================================')
         print(f'Collecting predictions for task: {task}')
-        file_path = f'../data/data/{task}.tsv'
+        file_path = f'../data/{task}.tsv'
         processed_data = process_tsv(file_path)
 
         batched_prompts, batched_mappings, batched_labels = [], [], []
         num_processed = 0
-        for entry in processed_data[:15]:
+        for entry in processed_data:
             # Pick random shuffle of answer options to avoid selection bias and store corresponding labels
             random_template_key = random.choice(list(prompt_templates.keys()))
             instruction_format = prompt_templates[random_template_key]
@@ -101,7 +103,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
                 # empty batch again
                 batched_prompts, batched_mappings = [], []
 
-        # process potential remaining samples
+        # process potential remaining samples which did not fit in the final batch
         if batched_prompts:
             results, num_processed = process_batch(model, batched_prompts, batched_mappings, batched_labels, task, num_processed, results)
 
