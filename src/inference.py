@@ -14,6 +14,7 @@ from prompters import *
 import time
 import json
 from datetime import datetime
+import glob
 
 
 
@@ -23,6 +24,8 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1', 'temporal-2'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
+    parser.add_argument('--run_all', default='temporal', type=str, metavar='TASK Type',
+                        help='define tasks to evaluate')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
@@ -119,10 +122,19 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     return None
 
 
+def get_task_list(task_name):
+    files = glob.glob(f'data/{task_name}-*.tsv')
+    file_names = [os.path.basename(file)[:-4] for file in files]
+    return file_names
+
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
+    if args.run_all is None:
+        task_list = args.task
+    else:
+        task_list = get_task_list(args.run_all)
     average_accuracy = run_tasks(
         args.task, 
         args.model, 
