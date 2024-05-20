@@ -111,6 +111,13 @@ class FewShotCOTPrompter(DefaultPrompter):
         return prompts
 
 
+class FinetunePrompter(ZeroShotPompter):
+
+    def create_evaluation_prompt(self, question: str, model_answer: str) -> List[Dict[str, str]]:
+        prompt = f"Given the premise provided, is the hypothesis: A. entailment or B. contradiction or C. neutral ? \n Answer: \n\n  {model_answer} ### Answer:"
+        return [{"role": "user", "content": prompt}]
+
+
 
 class EvaluationPrompter(ZeroShotPompter):
 

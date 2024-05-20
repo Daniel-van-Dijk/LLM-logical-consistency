@@ -10,7 +10,8 @@ from models.starling7B import Starling7B
 from preprocess import *
 from utils import *
 from evaluators import RegexEvaluator, LogprbsEvaluator
-from prompters import EvaluationPrompter
+from prompters import EvaluationPrompter, FinetunePrompter
+from finetuning.mistral7B_finetune import Mistral7B_ft
 
 
 def get_args_parser():
@@ -33,19 +34,10 @@ def get_args_parser():
 
 def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str, evaluation_type: str):
 
-    # Evaluator is ALWAYS Llama3 
-    evaluation_model = LLama3_8B()
-    if model_name == 'hermes13B':
-        model = Hermes13B()
-    elif model_name == 'mistral7B':
-        model = Mistral7B()
-    elif model_name == 'llama3_8B':
-        model = LLama3_8B()
-    elif model_name == 'starling7B':
-        model = Starling7B()
-
+    
+  
     # Prompters
-    evaluation_prompter = EvaluationPrompter()
+    evaluation_prompter = FinetunePrompter()
 
     total_accuracy: float = 0.
 
@@ -60,12 +52,20 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
         answers = process_tsv(file_path)
 
         if evaluation_type == 'llm':
+
+            path="finetuning/mistral_atcs_finetune/checkpoint-150"
+
+            evaluation_model= Mistral7B_ft()
             evaluator_answers = []
             for entry in answers:
                 question_asked, model_answer, true_class = entry
                 # ----------------- #
                 # -- Second Step -- #
                 # ----------------- #
+                
+
+                evaluation_model.get_best_model(path)
+                
                 instruction = evaluation_prompter.create_evaluation_prompt(
                     question=question_asked,
                     model_answer=model_answer
@@ -73,7 +73,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 print("Prompt: ", instruction)
                 output = evaluation_model.inference_for_prompt(prompt=instruction)
                 print(f"Model output: {output}")
-
+                
                 evaluator_answers.append((question_asked, output, true_class))
             
             # --------------------------------------------- #
