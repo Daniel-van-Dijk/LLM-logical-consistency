@@ -79,7 +79,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         print('\n\n\n')
         print('==========================================')
         print(f'Collecting predictions for task: {task}')
-        file_path = f'../data/data/{task}.tsv'
+        file_path = f'../data/{task}.tsv'
         processed_data = process_tsv(file_path)
 
         batched_prompts, batched_mappings, batched_labels = [], [], []
