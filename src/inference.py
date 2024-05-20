@@ -42,12 +42,12 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     start_time = time.time()
     general_instruction = 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter.'
     prompt_templates = {
-        'mcq1': 'Given the premise provided, is the hypothesis: A. entailment or B. neutral or C. contradiction ? \n Answer: ',
-        'mcq2': 'Given the premise provided, is the hypothesis: A. entailment or B. contradiction or C. neutral ? \n Answer: ',
-        'mcq3': 'Given the premise provided, is the hypothesis: A. neutral or B. entailment or C. contradiction ? \n Answer: ',
-        'mcq4': 'Given the premise provided, is the hypothesis: A. neutral or B. contradiction or C. entailment ? \n Answer: ',
-        'mcq5': 'Given the premise provided, is the hypothesis: A. contradiction or B. neutral or C. entailment ? \n Answer: ',
-        'mcq6': 'Given the premise provided, is the hypothesis: A. contradiction or B. entailment or C. neutral ? \n Answer: '
+        'mcq1': 'Given the premise provided, is the hypothesis: A. entailment or B. neutral or C. contradiction ? \n Answer:',
+        'mcq2': 'Given the premise provided, is the hypothesis: A. entailment or B. contradiction or C. neutral ? \n Answer:',
+        'mcq3': 'Given the premise provided, is the hypothesis: A. neutral or B. entailment or C. contradiction ? \n Answer:',
+        'mcq4': 'Given the premise provided, is the hypothesis: A. neutral or B. contradiction or C. entailment ? \n Answer:',
+        'mcq5': 'Given the premise provided, is the hypothesis: A. contradiction or B. neutral or C. entailment ? \n Answer:',
+        'mcq6': 'Given the premise provided, is the hypothesis: A. contradiction or B. entailment or C. neutral ? \n Answer:'
     }
     # keep correspondence of labels since we shuffle answer options 
     label_mappings = {
@@ -58,8 +58,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         'mcq5': {'A': 'contradiction', 'B': 'neutral', 'C': 'entailment'},
         'mcq6': {'A': 'contradiction', 'B': 'entailment', 'C': 'neutral'}
     }
-    # TODO: add other options back
-    prompter = ZeroShotPompter()
+    prompter: DefaultPrompter = create_prompter_from_str(prompt_type)
 
     if model_name == 'hermes13B':
         model = Hermes13B()
@@ -80,7 +79,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         print('\n\n\n')
         print('==========================================')
         print(f'Collecting predictions for task: {task}')
-        file_path = f'../data/{task}.tsv'
+        file_path = f'../data/data/{task}.tsv'
         processed_data = process_tsv(file_path)
 
         batched_prompts, batched_mappings, batched_labels = [], [], []
