@@ -63,7 +63,7 @@ class StarlingZeroShot(ABC):
         instruction_format = instruction_format[:instruction_format.find('?') + 1]
         prompt = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
         instruction = f"GPT4 Correct User: {prompt}<|end_of_turn|>GPT4 Correct Assistant:"
-        return [instruction]
+        return instruction
 
 
     def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:

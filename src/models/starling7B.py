@@ -10,7 +10,7 @@ class Starling7B:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id).to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-
+        self.tokenizer.padding_side = 'left'
 
 
     def inference_for_prompt(self, prompts):
