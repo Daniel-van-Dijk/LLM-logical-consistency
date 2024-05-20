@@ -5,18 +5,30 @@ import torch
 class Starling7B:
 
     model_id: str = "berkeley-nest/Starling-LM-7B-alpha"
-
+        
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id).to(self.device)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id, padding_side='left')
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+
 
     def inference_for_prompt(self, prompt: List[Dict[str, str]]) -> str:
-        input_ids = self.tokenizer.apply_chat_template(prompt, return_tensors="pt", padding=True)  # no add_generation_prompt=True. padding=True is default or is it just needed?
+        single_turn_prompt = f"GPT4 Correct User: {prompt}<|end_of_turn|>GPT4 Correct Assistant:"
+        input_ids = self.tokenizer(single_turn_prompt, return_tensors="pt").input_ids
         prompt_length = input_ids.size(1)
-        input_ids = input_ids.to(self.device)
-        generated_ids = self.model.generate(input_ids, max_new_tokens=300, do_sample=True, pad_token_id=self.tokenizer.eos_token_id)  # no eos_token_id?
-        response = generated_ids[0][prompt_length:]
-        decoded_output = self.tokenizer.decode(response)
-        return decoded_output
+        input_ids = input_ids.to(self.model.device)
+        generated_dict = self.model.generate(
+            input_ids,
+            max_length=256,
+            pad_token_id=self.tokenizer.pad_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
+            output_logits = True, 
+            return_dict_in_generate=True
+        )
+        attributes = dir(generated_dict)
+        attributes = [a for a in attributes if not a.startswith('__')]
 
+        response_ids = generated_dict.sequences[0]
+        response_text = self.tokenizer.decode(response_ids[prompt_length:], skip_special_tokens=True)
+        
+        return response_text, generated_dict
