@@ -15,6 +15,7 @@ class Mistral7B:
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id).to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = 'left'
 
     def inference_for_prompt(self, prompts):
         # Encode the prompts using the chat template and pad them
