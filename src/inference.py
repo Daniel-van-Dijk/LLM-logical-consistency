@@ -19,7 +19,7 @@ from datetime import datetime
 
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI inference', add_help=False)
-    parser.add_argument('--model', default='tinytest', type=str, metavar='MODEL',
+    parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1', 'temporal-2'], type=str, metavar='TASK', nargs='+',
                         help='define tasks to evaluate. possible to give multiple')
@@ -72,6 +72,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
 
     os.makedirs(output_dir, exist_ok=True)
     for task in tasks:
+        print(f"{task} started at {datetime.now()}")
         results = []
         print('\n\n\n')
         print('==========================================')
