@@ -12,23 +12,22 @@ class Starling7B:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
 
-    def inference_for_prompt(self, prompt: List[Dict[str, str]]) -> str:
-        single_turn_prompt = f"GPT4 Correct User: {prompt}<|end_of_turn|>GPT4 Correct Assistant:"
-        input_ids = self.tokenizer(single_turn_prompt, return_tensors="pt").input_ids
-        prompt_length = input_ids.size(1)
-        input_ids = input_ids.to(self.model.device)
+
+    def inference_for_prompt(self, prompts):
+        encodeds = self.tokenizer(prompts, return_tensors="pt", padding=True)
+        prompt_length = encodeds['input_ids'].size(1)
+        model_inputs = encodeds.to(self.device)
         generated_dict = self.model.generate(
-            input_ids,
+            **model_inputs,
             max_length=256,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
-            output_logits = True, 
+            output_scores=True, 
             return_dict_in_generate=True
         )
-        attributes = dir(generated_dict)
-        attributes = [a for a in attributes if not a.startswith('__')]
-
-        response_ids = generated_dict.sequences[0]
-        response_text = self.tokenizer.decode(response_ids[prompt_length:], skip_special_tokens=True)
-        
-        return response_text, generated_dict
+        generated_ids = generated_dict.sequences
+        # Decode tokens starting from the index after prompt length for each prompt in the batch
+        decoded_batch = [self.tokenizer.decode(generated_ids[i][prompt_length:], skip_special_tokens=True) for i in range(len(prompts))]
+        # Extract logits for the first token of each generated output
+        first_token_logits_batch = [generated_dict.scores[0][i].tolist() for i in range(len(prompts))]
+        return decoded_batch, first_token_logits_batch

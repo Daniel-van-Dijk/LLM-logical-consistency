@@ -31,14 +31,14 @@ class DefaultPrompter(ABC):
 
 
 
-class ZeroShotPompter(DefaultPrompter):
+# class ZeroShotPompter(DefaultPrompter):
 
-    def __init__(self):
-        print("Using zero shot prompting...")
+#     def __init__(self):
+#         print("Using zero shot prompting...")
 
 
-    def create_instruction(self, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
-        return self._create_question(instruction_format, premise, hypothesis)
+#     def create_instruction(self, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+#         return self._create_question(instruction_format, premise, hypothesis)
 
 class CollectDataPrompter(ABC):
 
@@ -61,6 +61,22 @@ class ZeroShotPompter(ABC):
     def _create_question(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
         instruction = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
         return [{"role": "user", "content": instruction}]
+
+
+    def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        return self._create_question(general_instruction, instruction_format, premise, hypothesis)
+
+class StarlingZeroShot(ABC):
+
+    def __init__(self):
+        print("Zero shot for starling")
+    
+    def _create_question(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
+        # for starling, we need to remove "Answer: " from the prompt since it's finetuned as shown in "instruction" below.
+        instruction_format = instruction_format[:instruction_format.find('?') + 1]
+        prompt = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
+        instruction = f"GPT4 Correct User: {prompt}<|end_of_turn|>GPT4 Correct Assistant:"
+        return instruction
 
 
     def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:

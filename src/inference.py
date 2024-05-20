@@ -14,7 +14,6 @@ from prompters import *
 import time
 import json
 from datetime import datetime
-import glob
 
 
 
@@ -22,16 +21,16 @@ def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI inference', add_help=False)
     parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
                         help='model to run inference on')
-    parser.add_argument('--task', default=['temporal-1', 'temporal-2'], type=str, metavar='TASK', nargs='+',
-                        help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--run_all', default='temporal', type=str, metavar='TASK Type',
+    parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
+                        help='define taqsks to evaluate. possible to give multiple')
+    parser.add_argument('--run_all', default=None, type=str, metavar='TASK Type',
                         help='define tasks to evaluate')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
     parser.add_argument('--output_dir', default='../predictions', type=str, metavar='OUTPUT_DIR',
                         help='dir to store data')
-    parser.add_argument('--batch_size', default=32, type=int, metavar='BATCH_SIZE',
+    parser.add_argument('--batch_size', default=24, type=int, metavar='BATCH_SIZE',
                         help='batch size for inference')
     return parser
 
@@ -59,7 +58,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         'mcq5': {'A': 'contradiction', 'B': 'neutral', 'C': 'entailment'},
         'mcq6': {'A': 'contradiction', 'B': 'entailment', 'C': 'neutral'}
     }
-    # TODO: add options back 
+    # TODO: add other options back
     prompter = ZeroShotPompter()
 
     if model_name == 'hermes13B':
@@ -70,6 +69,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         model = LLama3_8B()
     elif model_name == 'starling7B':
         model = Starling7B()
+        prompter = StarlingZeroShot()
     elif model_name == 'tinytest':
         model = TinyTest()
 
@@ -122,11 +122,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     return None
 
 
-def get_task_list(task_name):
-    files = glob.glob(f'data/{task_name}-*.tsv')
-    file_names = [os.path.basename(file)[:-4] for file in files]
-    return file_names
-
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
@@ -135,6 +130,8 @@ if __name__ == "__main__":
         task_list = args.task
     else:
         task_list = get_task_list(args.run_all)
+    
+    print("Task list: ", task_list)
     average_accuracy = run_tasks(
         args.task, 
         args.model, 
