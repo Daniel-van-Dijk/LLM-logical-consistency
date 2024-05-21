@@ -19,7 +19,7 @@ from datetime import datetime
 subsets = {
     'numerical': ['numerical-13', 'numerical-9', 'numerical-29', 'numerical-20', 'numerical-6', 'numerical-3', 'numerical-24',
         'numerical-22', 'numerical-21', 'numerical-7', 'numerical-30', 'numerical-1', 'numerical-4', 'numerical-31', 'numerical-17'],
-        
+
     'temporal': ['temporal-1', 'temporal-3', 'temporal-4', 'temporal-5', 'temporal-7', 'temporal-8', 'temporal-9',
         'temporal-11','temporal-13', 'temporal-14', 'temporal-23', 'temporal-30', 'temporal-31', 'temporal-40', 'temporal-55']
 }
@@ -137,7 +137,7 @@ if __name__ == "__main__":
         task_list = args.task
     else:
         # task_list = get_task_list(args.run_all)
-        task_list = subsets[arg.run_tasks]
+        task_list = subsets[args.run_tasks]
     
     print("Task list: ", task_list)
     average_accuracy = run_tasks(
