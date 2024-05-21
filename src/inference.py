@@ -63,8 +63,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     if model_name == 'hermes13B':
         model = Hermes13B()
     elif model_name == 'mistral7B':
-        #model = Mistral7B()
-        model = TinyTest()
+        model = Mistral7B()
     elif model_name == 'llama3_8B':
         model = LLama3_8B()
     elif model_name == 'starling7B':
