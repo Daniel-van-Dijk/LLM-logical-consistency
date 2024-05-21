@@ -18,16 +18,20 @@ if __name__ == "__main__":
 
     aggregated_df= pd.DataFrame()
     for model in models_list:
+        print(model)
         data_file = pd.read_csv(f'./annotated_data/{model}_annotated.csv')
 
         aggregated_df = pd.concat([aggregated_df, data_file], ignore_index=True)
+    
+    aggregated_df= aggregated_df.fillna(value='None')
 
 
-    df= aggregated_df[["instruction_and_answer", "sentiment"]]
+    df= aggregated_df[["answer", "sentiment"]]
     df.rename(columns={
-        "instruction_and_answer": 'input',
+        "answer": 'input',
         "sentiment": 'output'
     }, inplace=True)
+
 
     train_df, eval_df = train_test_split(df, test_size=0.2, random_state=42)
 

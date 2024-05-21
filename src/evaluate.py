@@ -13,6 +13,7 @@ from evaluators import RegexEvaluator, LogprbsEvaluator
 from prompters import EvaluationPrompter, FinetunePrompter
 from finetuning.mistral7B_finetune import Mistral7B_ft
 
+from sklearn.metrics import accuracy_score
 
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
@@ -57,6 +58,10 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
 
             evaluation_model= Mistral7B_ft()
             evaluator_answers = []
+            evaluation_model.get_best_model(path)
+
+            correct_classes_list=[]
+            predicted_classes_list=[]
             for entry in answers:
                 question_asked, model_answer, true_class = entry
                 # ----------------- #
@@ -64,22 +69,30 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 # ----------------- #
                 
 
-                evaluation_model.get_best_model(path)
                 
-                instruction = evaluation_prompter.create_evaluation_prompt(
+                
+                instruction = FinetunePrompter.create_evaluation_prompt(
                     question=question_asked,
                     model_answer=model_answer
                 )
+
+
                 print("Prompt: ", instruction)
                 output = evaluation_model.inference_for_prompt(prompt=instruction)
-                print(f"Model output: {output}")
-                
+                predicted_classes_list.append(output)
+                print(f"Model output: {output}, true class: {true_class}")
+                correct_classes_list.append(true_class)
                 evaluator_answers.append((question_asked, output, true_class))
             
             # --------------------------------------------- #
             # In Two-Step LLM QA, the answer is always MCQ  #
             # --------------------------------------------- #
             results, accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(evaluator_answers)
+
+            print("------------------------------------------")
+            print("Manual accuracy")
+            final_score= accuracy_score(correct_classes_list, predicted_classes_list)
+            print("Total accuracy:", final_score)
         
         elif evaluation_type == 'regex':
             results, accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(answers)

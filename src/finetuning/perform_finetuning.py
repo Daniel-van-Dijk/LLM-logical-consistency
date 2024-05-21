@@ -25,7 +25,8 @@ def get_args_parser():
 
 # data processing functions
 def formater(example):
-    text = f"### Question: {example['input']}\n ### Answer: {example['output']}"
+    text = f"<s>[INST] Classify the response and give A or B or C or None as an output. {example['input']}.[/INST] {example['output']}"
+
     return text
 
 def prompt_tokens(prompt):
@@ -36,8 +37,7 @@ def prompt_tokens(prompt):
         padding="max_length",
     )
     result["labels"] = result["input_ids"].copy()
-    print("here---------------------------")
-    print(result)
+    
     return result
 
 
