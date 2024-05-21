@@ -133,8 +133,10 @@ if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
-    if args.run_all is None:
-        task_list = args.task
+    if args.run_all is not None:
+        task_list = get_task_list(args.run_all)
+    elif args.run_tasks is not None:
+        task_list = subsets[args.run_tasks]
     else:
         # task_list = get_task_list(args.run_all)
         task_list = subsets[args.run_tasks]
