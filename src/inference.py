@@ -29,6 +29,7 @@ def get_args_parser():
                         help='model to run inference on')
     parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
                         help='define taqsks to evaluate. possible to give multiple')
+    parser.add_argument('--run_tasks', type=str, metavar='run_tasks', help='define tasks to evaluate. possible to give multiple')
     parser.add_argument('--run_all', default=None, type=str, metavar='TASK Type',
                         help='define tasks to evaluate')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
@@ -134,7 +135,8 @@ if __name__ == "__main__":
     if args.run_all is None:
         task_list = args.task
     else:
-        task_list = get_task_list(args.run_all)
+        # task_list = get_task_list(args.run_all)
+        task_list = subsets[arg.run_tasks]
     
     print("Task list: ", task_list)
     average_accuracy = run_tasks(

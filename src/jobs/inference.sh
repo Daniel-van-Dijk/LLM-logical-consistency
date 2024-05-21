@@ -13,4 +13,4 @@ module load 2023
 module load Anaconda3/2023.07-2
 
 source activate ACTS-practical-1
-srun python -u src/inference.py --model mistral7B --run_all temporal
+srun python -u src/inference.py --model mistral7B --run_tasks temporal
