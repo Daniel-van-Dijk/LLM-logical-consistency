@@ -63,7 +63,8 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     if model_name == 'hermes13B':
         model = Hermes13B()
     elif model_name == 'mistral7B':
-        model = Mistral7B()
+        #model = Mistral7B()
+        model = TinyTest()
     elif model_name == 'llama3_8B':
         model = LLama3_8B()
     elif model_name == 'starling7B':
@@ -132,7 +133,7 @@ if __name__ == "__main__":
     
     print("Task list: ", task_list)
     average_accuracy = run_tasks(
-        args.task, 
+        task_list, 
         args.model, 
         args.prompt_type,
         args.batch_size,

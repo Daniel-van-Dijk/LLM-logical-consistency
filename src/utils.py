@@ -95,8 +95,9 @@ def check_if_file_exists(file_path: str) -> bool:
     
     return False
 
-def get_task_list(task_name):
-    files = glob.glob(f'data/{task_name}-*.tsv')
+def get_task_list(task_name):   
+    files = glob.glob(f'../data/{task_name}-*.tsv')
+    print(files)
     file_names = [os.path.basename(file)[:-4] for file in files]
     return file_names
 
