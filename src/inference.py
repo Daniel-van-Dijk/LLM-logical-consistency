@@ -28,7 +28,7 @@ def get_args_parser():
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
-    parser.add_argument('--output_dir', default='../predictions', type=str, metavar='OUTPUT_DIR',
+    parser.add_argument('--output_dir', default='predictions', type=str, metavar='OUTPUT_DIR',
                         help='dir to store data')
     parser.add_argument('--batch_size', default=24, type=int, metavar='BATCH_SIZE',
                         help='batch size for inference')

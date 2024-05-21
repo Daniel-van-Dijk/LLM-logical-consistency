@@ -72,7 +72,7 @@ def run_tasks(tasks: List[str], model_name: str, output_dir: str):
         print('\n\n\n')
         print('==========================================')
         print(f'Collecting 50 responses for task: {task}' )
-        file_path = f'../data/{task}.tsv'
+        file_path = f'data/{task}.tsv'
         processed_data = process_tsv(file_path)
         for num, entry in enumerate(processed_data[:50]):
             # pick random shuffle of answer options to avoid selection bias

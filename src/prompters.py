@@ -83,7 +83,7 @@ class CollectDataPrompter(DefaultPrompter):
 class FewShotPrompter(DefaultPrompter):
 
     def __init__(self):
-        self.template_path: str = '../prompts/prompts_few_shot.tsv'
+        self.template_path: str = 'prompts/prompts_few_shot.tsv'
         print("Using few shot prompting...")
         self.prompt_templates = {
         'mcq1': 'Given the premise provided, is the hypothesis: A. entailment or B. neutral or C. contradiction ? \n Answer:',
@@ -124,7 +124,7 @@ class FewShotPrompter(DefaultPrompter):
 class FewShotCOTPrompter(DefaultPrompter):
 
     def __init__(self):
-        self.template_path: str = '../prompts/prompts_few_shot_cot.tsv'
+        self.template_path: str = 'prompts/prompts_few_shot_cot.tsv'
         print("Using few shot prompting with Chain-of-Thought...")
 
 
