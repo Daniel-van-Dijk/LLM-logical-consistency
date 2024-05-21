@@ -17,30 +17,35 @@ class LLama3_8B:
             torch_dtype=torch.bfloat16,
             device_map="auto",
         )
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = 'left'
 
 
-    def inference_for_prompt(self, prompt: List[Dict[str, str]]) -> str:
+    def inference_for_prompt(self, prompts: List[Dict[str, str]]) -> str:
         input_ids = self.tokenizer.apply_chat_template(
-            prompt,
+            prompts,
+            padding=True,
             add_generation_prompt=True,
-            return_tensors="pt"
+            return_tensors="pt",
+            return_dict=True
         ).to(self.model.device)
-
+        prompt_length = input_ids['input_ids'].size(1)
         terminators = [
             self.tokenizer.eos_token_id,
             self.tokenizer.convert_tokens_to_ids("<|eot_id|>")
         ]
 
-        outputs = self.model.generate(
-            input_ids,
+        generated_dict = self.model.generate(
+            **input_ids,
             max_new_tokens=256,
             eos_token_id=terminators,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-            output_logits = True,
+            pad_token_id = self.tokenizer.eos_token_id,
+            output_scores=True, 
             return_dict_in_generate=True
         )
-        response = outputs[0][input_ids.shape[-1]:]
-        output = self.tokenizer.decode(response, skip_special_tokens=True)
-        return output, outputs
+        generated_ids = generated_dict.sequences
+        # Decode tokens starting from the index after prompt length for each prompt in the batch
+        decoded_batch = [self.tokenizer.decode(generated_ids[i][prompt_length:], skip_special_tokens=True) for i in range(len(prompts))]
+        # Extract logits for the first token of each generated output
+        first_token_logits_batch = [generated_dict.scores[0][i].tolist() for i in range(len(prompts))]
+        return decoded_batch, first_token_logits_batch

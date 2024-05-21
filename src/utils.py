@@ -8,6 +8,15 @@ import json
 import glob
 import os
 
+def avoid_inf(logit, min_value=-1e10, max_value=1e10):
+    # avoid storing of -Infinity and +Infinity
+    if logit < min_value:
+        return min_value
+    if logit > max_value:
+        return max_value
+    return logit
+
+
 def process_batch(model, batched_prompts, batched_mappings, batched_labels, task, num_processed, results):
     # from https://discuss.pytorch.org/t/how-to-check-the-gpu-memory-being-used/131220
     device = torch.cuda.get_device_properties(0)
@@ -39,14 +48,14 @@ def process_batch(model, batched_prompts, batched_mappings, batched_labels, task
                     "question": question_asked,
                     "answer": output,
                     "logits": {
-                        "A": logits[model.tokenizer.convert_tokens_to_ids("A")],  
-                        "B": logits[model.tokenizer.convert_tokens_to_ids("B")],  
-                        "C": logits[model.tokenizer.convert_tokens_to_ids("C")]
+                        "A": avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("A")]),  
+                        "B": avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("B")]),  
+                        "C": avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("C")])
                     },
                     "logits_mapped": {
-                        label_mapping['A']: logits[model.tokenizer.convert_tokens_to_ids("A")],
-                        label_mapping['B']: logits[model.tokenizer.convert_tokens_to_ids("B")],
-                        label_mapping['C']: logits[model.tokenizer.convert_tokens_to_ids("C")]
+                        label_mapping['A']: avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("A")]),
+                        label_mapping['B']: avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("B")]),
+                        label_mapping['C']: avoid_inf(logits[model.tokenizer.convert_tokens_to_ids("C")])
                     },
                     "label_mapping": label_mapping,
                     "question_and_answer": f"{question_asked}\n\n{output}",
