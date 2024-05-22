@@ -73,7 +73,7 @@ class LogprobsEvaluator:
 
             # prediction is highest logit
             pred_label = max(logits_mapped, key = logits_mapped.get)
-            print('pred_label:', pred_label)
+            #print('pred_label:', pred_label)
             pred_logit = logits_mapped[pred_label]
 
             # Determine if the prediction is correct
@@ -86,61 +86,5 @@ class LogprobsEvaluator:
         correct_answers = np.array(correct_answers)
         all_probs = np.array(all_probs)
 
-        print("Average accuracy {:.3f}".format(acc))
-
         return correct_answers, acc, all_probs 
     
-
-answers = [
-    {
-        "task": "temporal-2",
-        "question_number": 1,
-        "question": "Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Premise: \"Andrea was born in 1996 and Sharon was born in 2004.\". Hypothesis: \"Sharon was born after Andrea.\". Given the premise provided, is the hypothesis: A. neutral or B. contradiction or C. entailment ? \n Answer: ",
-        "answer": "C. entailment. The hypothesis follows logically from the premise.",
-        "logits": {
-            "A": -0.8519324660301208,
-            "B": -0.5721256136894226,
-            "C": 15.081100463867188
-        },
-        "logits_mapped": {
-            "neutral": -0.8519324660301208,
-            "contradiction": -0.5721256136894226,
-            "entailment": 15.081100463867188
-        },
-        "label_mapping": {
-            "A": "neutral",
-            "B": "contradiction",
-            "C": "entailment"
-        },
-        "question_and_answer": "[{'role': 'user', 'content': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Premise: \"Andrea was born in 1996 and Sharon was born in 2004.\". Hypothesis: \"Sharon was born after Andrea.\". Given the premise provided, is the hypothesis: A. neutral or B. contradiction or C. entailment ? \\n Answer: '}]\n\nC. entailment. The hypothesis follows logically from the premise.",
-        "instruction_and_answer": "{'A': 'neutral', 'B': 'contradiction', 'C': 'entailment'}\n\nC. entailment. The hypothesis follows logically from the premise.",
-        "label": "entailment"
-    },
-    {
-        "task": "temporal-2",
-        "question_number": 2,
-        "question": "Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Premise: \"Judith was born in 1991 and Linda was born in 1993.\". Hypothesis: \"Linda was born after Judith.\". Given the premise provided, is the hypothesis: A. entailment or B. contradiction or C. neutral ? \n Answer: ",
-        "answer": "A. entailment. The hypothesis follows logically from the premise.",
-        "logits": {
-            "A": 16.58739471435547,
-            "B": -1.6540007591247559,
-            "C": 1.401352882385254
-        },
-        "logits_mapped": {
-            "entailment": 16.58739471435547,
-            "contradiction": -1.6540007591247559,
-            "neutral": 1.401352882385254
-        },
-        "label_mapping": {
-            "A": "entailment",
-            "B": "contradiction",
-            "C": "neutral"
-        },
-        "question_and_answer": "[{'role': 'user', 'content': 'Please read the multiple-choice question below carefully and select ONE of the listed options and only give a single letter. Premise: \"Judith was born in 1991 and Linda was born in 1993.\". Hypothesis: \"Linda was born after Judith.\". Given the premise provided, is the hypothesis: A. entailment or B. contradiction or C. neutral ? \\n Answer: '}]\n\nA. entailment. The hypothesis follows logically from the premise.",
-        "instruction_and_answer": "{'A': 'entailment', 'B': 'contradiction', 'C': 'neutral'}\n\nA. entailment. The hypothesis follows logically from the premise.",
-        "label": "entailment"
-    },
-]
-
-evaluator = LogprobsEvaluator()
-correct_answers, acc, all_probs = evaluator.compute_logprobs(answers)

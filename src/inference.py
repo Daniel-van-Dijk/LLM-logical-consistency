@@ -67,7 +67,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         'mcq5': {'A': 'contradiction', 'B': 'neutral', 'C': 'entailment'},
         'mcq6': {'A': 'contradiction', 'B': 'entailment', 'C': 'neutral'}
     }
-    prompter: DefaultPrompter = create_prompter_from_str(prompt_type)
+    prompter: DefaultPrompter = create_prompter_from_str(prompt_type, model_name)
 
     if model_name == 'hermes13B':
         model = Hermes13B()
@@ -77,7 +77,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
         model = LLama3_8B()
     elif model_name == 'starling7B':
         model = Starling7B()
-        prompter = StarlingZeroShot()
     elif model_name == 'tinytest':
         model = TinyTest()
 
