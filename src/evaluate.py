@@ -72,7 +72,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 
                 
                 instruction = FinetunePrompter.create_evaluation_prompt(
-                    question=question_asked,
                     model_answer=model_answer
                 )
 
