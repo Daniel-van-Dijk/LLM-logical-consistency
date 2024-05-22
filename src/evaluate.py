@@ -6,57 +6,66 @@ from models.hermes13B import Hermes13B
 from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
 from models.starling7B import Starling7B
+from models.testLLM import TinyTest
 
 from preprocess import *
 from utils import *
-from evaluators import RegexEvaluator, LogprbsEvaluator
-from prompters import EvaluationPrompter, FinetunePrompter
-from finetuning.mistral7B_finetune import Mistral7B_ft
-
-from sklearn.metrics import accuracy_score
+from evaluators import RegexEvaluator, LogprobsEvaluator
+from prompters import EvaluationPrompter
+import glob
+import os
 
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
     parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
                         help='model to run inference on')
-    parser.add_argument('--task', default=['temporal-1'], type=str, metavar='TASK', nargs='+',
+    parser.add_argument('--task', default='temporal', type=str, metavar='TASK',
                         help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-template', default='supported', type=str,
-                        choices=['entailment', 'truth', 'supported', 'logically_follow', 'mcq'], 
-                        help='choose prompt template')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot', 'few_shot', 'few_shot_cot'],
                         help='choose prompt type')
-    parser.add_argument('--evaluation-type', default='regex', type=str,
-                        choices=['regex', 'logprob', 'llm'],
-                        help='choose evaluator type')
+    parser.add_argument('--evaluation-type', default=['logprob'], type=str, metavar='TASK', nargs='+',
+                        help='choose evaluator type'),
     return parser
 
 
-def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type: str, evaluation_type: str):
+def get_task_list_for_eval(model, task, prompt_type):
+    """
+    put folders for model, task, prompt_type like: starling7B_zero_shot_numerical/ in root directory!
+    """
+    pattern = f'{model}_{prompt_type}_{task}/{model}_{prompt_type}_{task}-*.json'
+    files = glob.glob(pattern)
+    return files
 
-    
-  
+def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_type: str):
+
+    # Evaluator is ALWAYS Llama3 
+    #evaluation_model = LLama3_8B()
     # Prompters
-    evaluation_prompter = FinetunePrompter()
+    #evaluation_prompter = EvaluationPrompter()
+    total_llm_acc: float = 0.
+    total_regex_acc: float = 0.
+    total_log_prob_acc: float = 0.
 
-    total_accuracy: float = 0.
+    file_paths = get_task_list_for_eval(model_name, tasks, prompt_type)
+    if len(file_paths) == 0:
+        raise FileNotFoundError(f"No files found. Please first run inference or fix path")
+    else:
+        print(f'files that will be evaluated', file_paths)
+    total_log_prob_acc = 0
+    for file_path in file_paths:
+        print('==============================')
+        print('evaluating file', file_path)
 
-    for task in tasks:
-        file_path = f'../predictions/{model_name}_{prompt_style}_{prompt_type}_{task}.tsv'
-
-        exists = check_if_file_exists(file_path)
+        # exists = check_if_file_exists(file_paths)
         
-        if not exists:
-            raise FileNotFoundError(f"{file_path} doesn't exist. Please first run inference...")
+        # if not exists:
+        #     raise FileNotFoundError(f"{file_path} doesn't exist. Please first run inference...")
         
-        answers = process_tsv(file_path)
+        answers = read_json(file_path)
 
-        if evaluation_type == 'llm':
 
-            path="finetuning/mistral_atcs_finetune/checkpoint-125"
-
-            evaluation_model= Mistral7B_ft()
+        if 'llm' in evaluation_type:
             evaluator_answers = []
             evaluation_model.get_best_model(path)
 
@@ -82,46 +91,53 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
             # --------------------------------------------- #
             # In Two-Step LLM QA, the answer is always MCQ  #
             # --------------------------------------------- #
-            results, accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(evaluator_answers)
+            llm_results, llm_accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(evaluator_answers)
+            print(f'Accuracy for {file_path} and LLM evaluator: {llm_accuracy:.2%}')
+            total_llm_acc += llm_accuracy
+        
+        if 'regex' in evaluation_type:
+            regex_results, regex_accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(answers)
+            print(f'Accuracy for {file_path} and regex evaluator: {regex_accuracy:.2%}')
+            total_regex_acc += regex_accuracy
 
-            print("------------------------------------------")
-            print("Manual accuracy")
-            final_score= accuracy_score(correct_classes_list, predicted_classes_list)
-            print("Total accuracy:", final_score)
+        if 'logprob' in evaluation_type:
+            _, logprob_accuracy, _ = LogprobsEvaluator.compute_logprobs(answers)
+            print(f'Accuracy for {file_path} with Logprob evaluator: {logprob_accuracy:.2%}')
+            total_log_prob_acc += logprob_accuracy
         
-        elif evaluation_type == 'regex':
-            results, accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(answers)
-
-        elif evaluation_type == 'logprob':
-            labels = ["A", "B", "C"]
-            choices_ids = []
-            for label in labels:
-                choices_ids.append(model.tokenizer.convert_tokens_to_ids(label))
-            results, accuracy, all_probs = LogprbsEvaluator.compute_logprobs(answers, choices_ids)
-        else:
-            raise NotImplementedError(f"Evaluation type: {evaluation_type} not implemented...")
-        
-        print(f'Accuracy for {task} and {evaluation_type}: {accuracy:.2%}')
-        for result in results:
-            print(result) 
-        
-        total_accuracy += accuracy
+    average_llm_acc = None
+    if 'llm' in evaluation_type:
+        average_llm_acc =  total_llm_acc / len(file_paths)
     
-    average_accuracy = total_accuracy / len(tasks)
+    average_regex_acc = None
+    if 'regex' in evaluation_type:
+        average_regex_acc =  total_regex_acc / len(file_paths)
+    
+    average_log_prob_acc = None
+    if 'logprob' in evaluation_type:
+        average_log_prob_acc =  total_log_prob_acc / len(file_paths)
 
-    return average_accuracy
+    return average_llm_acc, average_regex_acc, average_log_prob_acc
 
 
+# def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_type: str):
 
 if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
-    average_accuracy = run_tasks(
+    average_llm_acc, average_regex_acc, average_log_prob_acc = run_tasks(
         args.task, 
         args.model, 
-        args.prompt_template, 
-        args.prompt_type, 
+        args.prompt_type,
         args.evaluation_type
     )
-    print('Average accuracy: ', average_accuracy)
+    print('\n\n')
+    print('Accuracies for: ', args.model, args.prompt_type, args.task )
+
+    if 'llm' in args.evaluation_type:
+        print('Average LLM Accuracy: {:.3f}'.format(average_llm_acc))
+    if 'regex' in args.evaluation_type:
+        print('Average Regex Accuracy: {:.3f}'.format(average_regex_acc))
+    if 'logprob' in args.evaluation_type:
+        print('Average Log Probability Accuracy: {:.3f}'.format(average_log_prob_acc))
