@@ -7,11 +7,12 @@ from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
 from models.starling7B import Starling7B
 from models.testLLM import TinyTest
+from finetuning.mistral7B_finetune import Mistral7B_ft
 
 from preprocess import *
 from utils import *
 from evaluators import RegexEvaluator, LogprobsEvaluator
-from prompters import EvaluationPrompter
+from prompters import EvaluationPrompter, FinetunePrompter
 import glob
 import os
 
@@ -19,6 +20,8 @@ def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
     parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
                         help='model to run inference on')
+    parser.add_argument('--ft_model_path', default="src/finetuning/mistral_atcs_finetune/checkpoint-125", type=str, metavar='PATH',
+                        help='model path')
     parser.add_argument('--task', default='temporal', type=str, metavar='TASK',
                         help='define tasks to evaluate. possible to give multiple')
     parser.add_argument('--prompt-type', default='zero_shot', type=str,
@@ -37,17 +40,17 @@ def get_task_list_for_eval(model, task, prompt_type):
     files = glob.glob(pattern)
     return files
 
-def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_type: str):
+def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_type: str, ft_model_path:str):
 
-    # Evaluator is ALWAYS Llama3 
-    #evaluation_model = LLama3_8B()
+    evaluation_model = Mistral7B_ft()
     # Prompters
-    #evaluation_prompter = EvaluationPrompter()
+    evaluation_prompter = FinetunePrompter()
     total_llm_acc: float = 0.
     total_regex_acc: float = 0.
     total_log_prob_acc: float = 0.
 
     file_paths = get_task_list_for_eval(model_name, tasks, prompt_type)
+    print(file_paths)
     if len(file_paths) == 0:
         raise FileNotFoundError(f"No files found. Please first run inference or fix path")
     else:
@@ -67,22 +70,32 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
 
         if 'llm' in evaluation_type:
             evaluator_answers = []
-            evaluation_model.get_best_model(path)
+            evaluation_model.get_best_model(ft_model_path)
 
             correct_classes_list=[]
             predicted_classes_list=[]
             for entry in answers:
-                question_asked, model_answer, true_class = entry
+                
                 # ----------------- #
                 # -- Second Step -- #
                 # ----------------- #
+                model_answer=entry["answer"]
+                true_class=entry["label"]
+                question_asked=entry["question"]
+
                 instruction = evaluation_prompter.create_evaluation_prompt(
                     model_answer=model_answer
                 )
 
+                #print("------")
+                #print("Prompt: ", instruction)
+                intermediate_output = evaluation_model.inference_for_prompt(prompt=instruction)
+                #print("Intermediate output", intermediate_output)
+                if intermediate_output in ['A', 'B', 'C']:
+                    output= entry["label_mapping"][intermediate_output]
+                else:
+                    output= 'None'
 
-                print("Prompt: ", instruction)
-                output = evaluation_model.inference_for_prompt(prompt=instruction)
                 predicted_classes_list.append(output)
                 print(f"Model output: {output}, true class: {true_class}")
                 correct_classes_list.append(true_class)
@@ -91,10 +104,16 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
             # --------------------------------------------- #
             # In Two-Step LLM QA, the answer is always MCQ  #
             # --------------------------------------------- #
+            print("------------------------------------------")
             llm_results, llm_accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(evaluator_answers)
+            #print(f'Accuracy for {file_path} and LLM evaluator with regex: {llm_accuracy_reg:.2%}')
+         
+            #llm_accuracy= accuracy_score(correct_classes_list, predicted_classes_list)
             print(f'Accuracy for {file_path} and LLM evaluator: {llm_accuracy:.2%}')
+
             total_llm_acc += llm_accuracy
-        
+
+
         if 'regex' in evaluation_type:
             regex_results, regex_accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(answers)
             print(f'Accuracy for {file_path} and regex evaluator: {regex_accuracy:.2%}')
@@ -130,8 +149,8 @@ if __name__ == "__main__":
         args.task, 
         args.model, 
         args.prompt_type,
-        args.evaluation_type
-    )
+        args.evaluation_type,
+        args.ft_model_path)
     print('\n\n')
     print('Accuracies for: ', args.model, args.prompt_type, args.task )
 

@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     #wandb setup
 
-    wandb.login(key = "215bb68e0f98b16ed197b9d03269263337838420")
+    wandb.login(key = "add your token here")
 
     wandb_project = "atcs_finetune"
 
