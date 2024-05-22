@@ -67,11 +67,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
                 # ----------------- #
                 # -- Second Step -- #
                 # ----------------- #
-                
-
-                
-                
-                instruction = FinetunePrompter.create_evaluation_prompt(
+                instruction = evaluation_prompter.create_evaluation_prompt(
                     model_answer=model_answer
                 )
 
