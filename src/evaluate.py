@@ -54,7 +54,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_style: str, prompt_type:
 
         if evaluation_type == 'llm':
 
-            path="finetuning/mistral_atcs_finetune/checkpoint-150"
+            path="finetuning/mistral_atcs_finetune/checkpoint-125"
 
             evaluation_model= Mistral7B_ft()
             evaluator_answers = []

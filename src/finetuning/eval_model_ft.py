@@ -34,7 +34,7 @@ if __name__ == "__main__":
     output_name= "_".join(models_list)
 
     #model
-    path="mistral_atcs_finetune/checkpoint-150"
+    path="mistral_atcs_finetune/checkpoint-125"
 
     my_model= Mistral7B_ft()
     my_model.get_best_model(path)
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         if row['output']is not None:
             correct_classes_list.append(row['output'])
 
-            text = f"<s>[INST] Classify the response and give A or B or C or None as an output. {example['input']}.[/INST] "
+            text = f"<s>[INST] Classify the response and give A or B or C or None as an output. {row['input']}.[/INST] "
 
             message_1 = [{"role": "user", "content": text}]
             output= my_model.inference_for_prompt(message_1)
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     print("-------------End of inferences--------------")
     final_score= accuracy_score(correct_classes_list, predicted_classes_list)
     print("Totoal accuracy:", final_score)
- 
+
     print("Finished")
 
 
