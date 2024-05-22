@@ -21,7 +21,8 @@ subsets = {
         'numerical-22', 'numerical-21', 'numerical-7', 'numerical-30', 'numerical-1', 'numerical-4', 'numerical-31', 'numerical-17'],
     'temporal': ['temporal-1', 'temporal-3', 'temporal-4', 'temporal-5', 'temporal-7', 'temporal-8', 'temporal-9',
         'temporal-11','temporal-13', 'temporal-14', 'temporal-23', 'temporal-30', 'temporal-31', 'temporal-40', 'temporal-55'],
-    'quantifier': ['']
+    'quantifier': ['quantifier-14', 'quantifier-10', 'quantifier-6', 'quantifier-7', 'quantifier-15', 'quantifier-2', 'quantifier-11', 
+    'quantifier-3', 'quantifier-5', 'quantifier-1', 'quantifier-8', 'quantifier-4', 'quantifier-16', 'quantifier-9', 'quantifier-12']
 }
 
 def get_args_parser():
