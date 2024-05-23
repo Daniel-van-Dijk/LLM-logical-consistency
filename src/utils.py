@@ -7,6 +7,10 @@ import torch.nn.functional as F
 import json
 import glob
 import os
+import numpy as np
+import ast
+import pandas as pd
+
 
 def avoid_inf(logit, min_value=-1e10, max_value=1e10):
     # avoid storing of -Infinity and +Infinity
@@ -78,6 +82,36 @@ def process_batch(model, batched_prompts, batched_mappings, batched_labels, task
     return results, num_processed
 
 
+def calculate_mismatch_rate(models = ['starling7B', 'mistral7B', 'llama3_8B'], printing=False):
+    total_mismatch_rate = 0
+    for model in models:
+        df = pd.read_csv(f'mismatch_data/{model}_mismatch.csv')
+        # drop text output nans since logits have no nans option
+        df = df.dropna(subset=['sentiment'])
+        mismatches = 0
+        for _, row in df.iterrows():
+            # convert str to dict
+            logits = ast.literal_eval(row['logits'])
+            # strip potential whitespace
+            text_answer = row['sentiment'].strip() 
+            pred_label = max(logits, key=logits.get).strip() 
+            if pred_label != text_answer:
+                mismatches += 1
+                if printing:
+                    print(f'Mismatch found for: task {row["task"]} question { row["question_number"]} ')
+                    print("Log prob label:", pred_label)
+                    print("Extracted text label:", text_answer)
+                    print('Full text answer: ', row['answer'])
+                    print("\n")
+          
+        mismatch_rate = mismatches / len(df)
+        total_mismatch_rate += mismatch_rate
+
+        print(f'Mismatch rate for {model}: {mismatch_rate}')
+    print(f'Average mismatch rate of the models {total_mismatch_rate / len(models)}')
+    
+
+
 def validate_args(args):
     if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
         raise ValueError("Log probability evaluation works only on MCQ prompt inputs.")
@@ -108,5 +142,3 @@ def get_task_list(task_name):
     files = glob.glob(f'data/{task_name}-*.tsv')
     file_names = [os.path.basename(file)[:-4] for file in files]
     return file_names
-
-
