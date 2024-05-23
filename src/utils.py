@@ -99,6 +99,7 @@ def calculate_mismatch_rate(models = ['starling7B', 'mistral7B', 'llama3_8B'], p
                 mismatches += 1
                 if printing:
                     print(f'Mismatch found for: task {row["task"]} question { row["question_number"]} ')
+                    print(logits)
                     print("Log prob label:", pred_label)
                     print("Extracted text label:", text_answer)
                     print('Full text answer: ', row['answer'])
@@ -107,8 +108,9 @@ def calculate_mismatch_rate(models = ['starling7B', 'mistral7B', 'llama3_8B'], p
         mismatch_rate = mismatches / len(df)
         total_mismatch_rate += mismatch_rate
 
-        print(f'Mismatch rate for {model}: {mismatch_rate}')
-    print(f'Average mismatch rate of the models {total_mismatch_rate / len(models)}')
+        print(f'Mismatch rate for {model}: {mismatch_rate * 100:.2f}%')
+
+    print(f'Average mismatch rate of the models {total_mismatch_rate / len(models) * 100:.2f} %')
     
 
 
