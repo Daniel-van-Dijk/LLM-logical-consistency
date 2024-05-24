@@ -194,6 +194,14 @@ class FewShotCOTPrompter(DefaultPrompter):
         return prompts
 
 
+class FinetunePrompter(ZeroShotPompter):
+
+    def create_evaluation_prompt(self, model_answer: str) -> List[Dict[str, str]]:
+        prompt = f"<s>[INST] Classify the response and give A or B or C or None as an output. {model_answer}.[/INST] "
+
+        return [{"role": "user", "content": prompt}]
+
+
 
 class EvaluationPrompter(ZeroShotPompter):
 
