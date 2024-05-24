@@ -16,6 +16,9 @@ from prompters import EvaluationPrompter, FinetunePrompter
 import glob
 import os
 
+from sklearn.metrics import accuracy_score
+
+
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
     parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
@@ -97,7 +100,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
                     output= 'None'
 
                 predicted_classes_list.append(output)
-                print(f"Model output: {output}, true class: {true_class}")
+                #print(f"Model output: {output},sque true class: {true_class}")
                 correct_classes_list.append(true_class)
                 evaluator_answers.append((question_asked, output, true_class))
             
@@ -105,10 +108,9 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
             # In Two-Step LLM QA, the answer is always MCQ  #
             # --------------------------------------------- #
             print("------------------------------------------")
-            llm_results, llm_accuracy, _, _, _ = RegexEvaluator.parse_multiple_choice(evaluator_answers)
-            #print(f'Accuracy for {file_path} and LLM evaluator with regex: {llm_accuracy_reg:.2%}')
+            
          
-            #llm_accuracy= accuracy_score(correct_classes_list, predicted_classes_list)
+            llm_accuracy= accuracy_score(correct_classes_list, predicted_classes_list)
             print(f'Accuracy for {file_path} and LLM evaluator: {llm_accuracy:.2%}')
 
             total_llm_acc += llm_accuracy
