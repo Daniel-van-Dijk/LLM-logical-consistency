@@ -63,8 +63,8 @@ class ZeroShotPompterCOT(DefaultPrompter):
 
 
     def _create_question(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
-        instruction = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format} {self.cot_prompt}'
-        return [{"role": "user", "content": instruction}]
+        instruction = f'{general_instruction} Premise: "{premise}". Hypothesis: "{hypothesis}". {instruction_format}'
+        return [{"role": "user", "content": instruction}, {"role": "assistant", "content": self.cot_prompt}]
 
 
     def create_instruction(self, general_instruction: str, instruction_format: str, premise: str, hypothesis: str) -> List[Dict[str, str]]:
