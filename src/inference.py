@@ -17,21 +17,26 @@ from datetime import datetime
 
 
 subsets = {
-    'numerical': ['numerical-1', 'numerical-3', 'numerical-4', 'numerical-6', 'numerical-7',
-                  'numerical-9', 'numerical-13', 'numerical-17', 'numerical-20', 'numerical-21',
-                  'numerical-22', 'numerical-24', 'numerical-29', 'numerical-30', 'numerical-31'],
-    'temporal': ['temporal-1', 'temporal-3', 'temporal-4', 'temporal-5', 'temporal-7',
-                 'temporal-8', 'temporal-9', 'temporal-11', 'temporal-13', 'temporal-14',
-                 'temporal-23', 'temporal-30', 'temporal-31', 'temporal-40', 'temporal-55'],
-    'comparative': ['comparative-9', 'comparative-11', 'comparative-12', 'comparative-14', 'comparative-15',
-                    'comparative-17', 'comparative-19', 'comparative-24', 'comparative-27', 'comparative-31',
-                    'comparative-33', 'comparative-36', 'comparative-42', 'comparative-47', 'comparative-48'],
+    'numerical': ['numerical-1', 'numerical-2', 'numerical-3', 'numerical-4', 'numerical-6', 'numerical-7',
+                  'numerical-8', 'numerical-9', 'numerical-13', 'numerical-14', 'numerical-15', 'numerical-16',
+                  'numerical-17', 'numerical-20', 'numerical-21', 'numerical-22', 'numerical-24', 'numerical-29',
+                  'numerical-30', 'numerical-31'],
+    'temporal': ['temporal-1', 'temporal-2', 'temporal-3', 'temporal-4', 'temporal-5',
+                 'temporal-7', 'temporal-8', 'temporal-9', 'temporal-10', 'temporal-11',
+                 'temporal-12', 'temporal-13', 'temporal-14', 'temporal-23', 'temporal-30',
+                 'temporal-31', 'temporal-40', 'temporal-55'],
+    'comparative': ['comparative-2', 'comparative-3', 'comparative-9', 'comparative-10', 'comparative-11',
+                    'comparative-12', 'comparative-14', 'comparative-15', 'comparative-17', 'comparative-19',
+                    'comparative-24', 'comparative-27', 'comparative-31', 'comparative-33', 'comparative-36',
+                    'comparative-42', 'comparative-47', 'comparative-48'],
     'quantifier': ['quantifier-1', 'quantifier-2', 'quantifier-3', 'quantifier-4', 'quantifier-5',
                     'quantifier-6', 'quantifier-7', 'quantifier-8', 'quantifier-9', 'quantifier-10',
-                    'quantifier-11', 'quantifier-12', 'quantifier-14', 'quantifier-15', 'quantifier-16'],
+                    'quantifier-11', 'quantifier-12', 'quantifier-13', 'quantifier-14', 'quantifier-15',
+                    'quantifier-16'],
     'spatial': ['spatial-1', 'spatial-2', 'spatial-3', 'spatial-4', 'spatial-5',
                 'spatial-6', 'spatial-7', 'spatial-8', 'spatial-9', 'spatial-10',
-                'spatial-11', 'spatial-12', 'spatial-13', 'spatial-14', 'spatial-15']
+                'spatial-11', 'spatial-12', 'spatial-13', 'spatial-14', 'spatial-15',
+                'spatial-21', 'spatial-22', 'spatial-23', 'spatial-24', 'spatial-25']
 }
 
 def get_args_parser():
