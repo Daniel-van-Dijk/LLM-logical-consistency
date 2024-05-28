@@ -1,26 +1,36 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Dict
 import torch
-from models.mistral7B import Mistral7B
 from huggingface_hub import login
+from models.llama3_8B import LLama3_8B
 
-# make token on hugging face and insert here
-# huggingface_token = "insert_token"
-# login(token=huggingface_token)
 
-class Mistral7B_COT(Mistral7B):
-    def inference_for_prompt(self, prompts):
-        encodeds = self.tokenizer.apply_chat_template(prompts, return_tensors='pt', padding=True, return_dict=True)
-        # Remove the end of generation token </s> such that model continues generating after "let's think step by step"
+
+class LLama3_8B_COT(LLama3_8B):
+    def inference_for_prompt(self, prompts: List[Dict[str, str]]) -> str:
+        encodeds = self.tokenizer.apply_chat_template(
+            prompts,
+            padding=True,
+            add_generation_prompt=False,
+            return_tensors="pt",
+            return_dict=True,
+        )
+        # remove end of generation token <|eot_id|> such that model continues after "let's think step by step"
         input_ids = encodeds['input_ids'][:, :-1]
         attention_mask = encodeds['attention_mask'][:, :-1]
         prompt_length = input_ids.size(1)
+        model_inputs = {'input_ids': input_ids.to(self.model.device), 'attention_mask': attention_mask.to(self.model.device)}
+        terminators = [
+            self.tokenizer.eos_token_id,
+            self.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
 
-        model_inputs = {'input_ids': input_ids.to(self.device), 'attention_mask': attention_mask.to(self.device)}
         generated_dict = self.model.generate(
             **model_inputs,
             max_new_tokens=300,
-            pad_token_id=self.tokenizer.eos_token_id,
+            min_length=prompt_length + 10,
+            eos_token_id=terminators,
+            pad_token_id = self.tokenizer.eos_token_id,
             output_scores=True, 
             return_dict_in_generate=True
         )
