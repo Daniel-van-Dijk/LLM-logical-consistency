@@ -23,6 +23,8 @@ def get_args_parser():
     parser = argparse.ArgumentParser('Fine-tuning processing', add_help=False)
     parser.add_argument('--models_list', default=["mistral", "llama", "starling"], type=str, metavar='models', nargs='+',
                         help='define model names to finetune on. possible to give multiple')
+    parser.add_argument('--cot_prompting', default="yes", type=str,
+                        help='cot prompts or not?')
     return parser
 
 
@@ -32,15 +34,25 @@ if __name__ == "__main__":
     models_list= args.models_list
     print(f'Models: {models_list}')
     output_name= "_".join(models_list)
+    cot_prompting= args.cot_prompting
+    print("Do we use cot prompting?:", cot_prompting)
 
     #model
-    path="mistral_atcs_finetune/checkpoint-125"
+
+    
+
+    #dataset
+    if cot_prompting=='yes':
+
+        eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_cot_{output_name}.jsonl', split='train')
+        path="mistral_atcs_finetune_cot/checkpoint-275"
+
+    else:
+        eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_{output_name}.jsonl', split='train')
+        path="mistral_atcs_finetune/checkpoint-125"
 
     my_model= Mistral7B_ft()
     my_model.get_best_model(path)
-
-    #dataset
-    eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_{output_name}.jsonl', split='train')
     correct_classes_list=[]
     predicted_classes_list=[]
 

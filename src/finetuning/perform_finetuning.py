@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     #wandb setup
 
-    wandb.login(key = "add your token here")
+    wandb.login(key = "add it here")
 
     if cot_prompting== 'yes' :
         wandb_project = "atcs_finetune_cot"
@@ -106,8 +106,14 @@ if __name__ == "__main__":
     tokenizer =my_model.tokenizer
 
     #data handling
-    train_dataset = load_dataset('json', data_files=f'./modeling_data/train_{output_name}.jsonl', split='train')
-    eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_{output_name}.jsonl', split='train')
+    
+    if cot_prompting== 'yes':
+        print("yes once again")
+        train_dataset = load_dataset('json', data_files=f'./modeling_data/train_cot_{output_name}.jsonl', split='train')
+        eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_cot_{output_name}.jsonl', split='train')
+    else:
+        train_dataset = load_dataset('json', data_files=f'./modeling_data/train_{output_name}.jsonl', split='train')
+        eval_dataset = load_dataset('json', data_files=f'./modeling_data/eval_{output_name}.jsonl', split='train')
     tokenized_train_dataset = train_dataset.map(prompt_tokens)
     tokenized_val_dataset = eval_dataset.map(prompt_tokens)
 
