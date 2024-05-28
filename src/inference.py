@@ -2,12 +2,11 @@ import argparse
 
 from typing import List
 import random
-from models.hermes13B import Hermes13B
 from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
 from models.starling7B import Starling7B
 from models.mistral7B_COT import Mistral7B_COT
-from models.testLLM import TinyTest
+from models.llama3_8B_COT import LLama3_8B_COT
 import os
 from preprocess import *
 from utils import *
@@ -84,19 +83,18 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     }
     prompter: DefaultPrompter = create_prompter_from_str(prompt_type, model_name)
 
-    if model_name == 'hermes13B':
-        model = Hermes13B()
-    elif model_name == 'mistral7B':
+    if model_name == 'mistral7B':
         if prompt_type == 'zero_shot':
             model = Mistral7B()
         elif prompt_type == 'zero_shot_cot':
-            model = Mistral7B_COT
+            model = Mistral7B_COT()
     elif model_name == 'llama3_8B':
-        model = LLama3_8B()
+        if prompt_type == 'zero_shot':
+            model = LLama3_8B()
+        elif prompt_type == 'zero_shot_cot':
+            model = LLama3_8B_COT()
     elif model_name == 'starling7B':
         model = Starling7B()
-    elif model_name == 'tinytest':
-        model = TinyTest()
 
     os.makedirs(output_dir, exist_ok=True)
     for task in tasks:
