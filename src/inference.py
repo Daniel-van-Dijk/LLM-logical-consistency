@@ -6,6 +6,7 @@ from models.hermes13B import Hermes13B
 from models.mistral7B import Mistral7B
 from models.llama3_8B import LLama3_8B
 from models.starling7B import Starling7B
+from models.mistral7B_COT import Mistral7B_COT
 from models.testLLM import TinyTest
 import os
 from preprocess import *
@@ -86,7 +87,10 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, batch_size: i
     if model_name == 'hermes13B':
         model = Hermes13B()
     elif model_name == 'mistral7B':
-        model = Mistral7B()
+        if prompt_type == 'zero_shot':
+            model = Mistral7B()
+        elif prompt_type == 'zero_shot_cot':
+            model = Mistral7B_COT
     elif model_name == 'llama3_8B':
         model = LLama3_8B()
     elif model_name == 'starling7B':
