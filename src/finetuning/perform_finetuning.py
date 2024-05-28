@@ -21,6 +21,9 @@ def get_args_parser():
     parser = argparse.ArgumentParser('Fine-tuning processing', add_help=False)
     parser.add_argument('--models_list', default=["mistral", "llama", "starling"], type=str, metavar='models', nargs='+',
                         help='define model names to finetune on. possible to give multiple')
+    parser.add_argument('--cot_prompting', default="yes", type=str,
+                        help='cot prompts or not?')
+
     return parser
 
 # data processing functions
@@ -50,12 +53,17 @@ if __name__ == "__main__":
     models_list= args.models_list
     print(f'Models: {models_list}')
     output_name= "_".join(models_list)
+    cot_prompting= args.cot_prompting
+    print("Do we use cot prompting?:", cot_prompting)
 
     #wandb setup
 
     wandb.login(key = "add your token here")
 
-    wandb_project = "atcs_finetune"
+    if cot_prompting== 'yes' :
+        wandb_project = "atcs_finetune_cot"
+    else:
+        wandb_project = "atcs_finetune"
 
     if len(wandb_project) > 0:
         os.environ["WANDB_PROJECT"] = wandb_project
