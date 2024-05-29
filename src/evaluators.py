@@ -1,55 +1,5 @@
-import re
-
 from typing import List
-import torch
 import numpy as np
-
-class RegexEvaluator:
-    @staticmethod
-    def parse_multiple_choice(answers_labels: List):
-        """ 
-        Function where answer is expected to be answerable with a multiple choice style
-        Expected one of: (a) entailment, (b) neutral, (c) contradiction
-        """
-        correct, total = 0, 0
-        contradictions, entailments, neutrals, nans = 0, 0, 0, 0
-        results = []
-
-        for prompt, answer, actual_label in answers_labels:
-
-            answer_lower = answer.lower().strip()
-            is_entailment = bool(re.search(r'A.', answer_lower)) or \
-                            bool(re.search(r'entailment', answer_lower))
-            is_contradiction = bool(re.search(r'\(c\)', answer_lower)) or \
-                            bool(re.search(r'contradiction', answer_lower))
-            is_neutral = bool(re.search(r'\(b\)', answer_lower)) or \
-                            bool(re.search(r'neutral', answer_lower))
-
-            if is_entailment:
-                transformed_label = 'entailment'
-                entailments += 1
-            elif is_contradiction:
-                transformed_label = 'contradiction'
-                contradictions += 1
-            elif is_neutral:
-                transformed_label = 'neutral'
-                neutrals += 1
-            else:
-                nans += 1
-
-            total += 1
-            if transformed_label == actual_label:
-                correct += 1 
-
-            results.append((prompt, transformed_label, actual_label))
-        accuracy = correct / total
-        print('\n')
-        print("Accuracy:", accuracy)
-        print("neutrals predicted", neutrals)
-        print("entailments predicted", entailments)
-        print("contradictions predicted", contradictions)
-        
-        return results, accuracy, neutrals, entailments, contradictions
 
 class LogprobsEvaluator:
 
