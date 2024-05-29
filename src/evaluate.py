@@ -40,6 +40,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
     # only load if llm eval
     if 'llm' in evaluation_type:
         evaluation_model = Mistral7B_ft()
+        evaluation_model.get_best_model(ft_model_path)
     
     # Prompter
     evaluation_prompter = FinetunePrompter()
@@ -61,7 +62,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
 
         if 'llm' in evaluation_type:
             evaluator_answers = []
-            evaluation_model.get_best_model(ft_model_path)
 
             correct_classes_list = []
             predicted_classes_list = []
@@ -77,7 +77,6 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
                     output= entry["label_mapping"][intermediate_output]
                 else:
                     output= 'None'
-
                 predicted_classes_list.append(output)
                 correct_classes_list.append(true_class)
                 evaluator_answers.append((question_asked, output, true_class))
