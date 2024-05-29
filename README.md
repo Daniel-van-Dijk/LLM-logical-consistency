@@ -3,7 +3,7 @@
 
 ## Set up
 
-### Dependencies for running inference.py and evalaute.py
+### Dependencies for running inference.py and evaluate.py
 ```
 - python 3.9
 - numpy 1.24.2 
@@ -18,7 +18,7 @@
 The environment can be installed with: "conda env create -f env.yml"
 
 
-### Finetuning environment (make a **separate** environmen due to potential conflicts)
+### Finetuning environment (make a **separate** environment due to potential conflicts)
 
 - Create an empty conda environment: conda create --name finetuning_env python=3.10
 
