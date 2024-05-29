@@ -24,7 +24,7 @@ The environment can be installed with: "conda env create -f env.yml"
 - Create an empty conda environment: conda create --name finetuning_env python=3.10
 
 Run: 
-
+```
 !pip install -q -U bitsandbytes
 
 !pip install -q -U git+https://github.com/huggingface/transformers.git
@@ -36,3 +36,4 @@ Run:
 !pip install -q trl xformers wandb datasets einops gradio sentencepiece
 
 !pip install scikit-learn
+```
