@@ -15,16 +15,14 @@ from sklearn.metrics import accuracy_score
 def get_args_parser():
     parser = argparse.ArgumentParser('LoNLI evaluation with LLMs', add_help=False)
     parser.add_argument('--model', default='mistral7B', type=str, metavar='MODEL',
-                        help='model to run inference on')
-    parser.add_argument('--ft_model_path', default="src/finetuning/mistral_atcs_finetune/checkpoint-125", type=str, metavar='PATH',
-                        help='model path')
+                        help='model to run evaluate')
     parser.add_argument('--task', default='temporal', type=str, metavar='TASK',
-                        help='define tasks to evaluate. possible to give multiple')
-    parser.add_argument('--prompt-type', default='zero_shot', type=str,
+                        help='define the task to evaluate')
+    parser.add_argument('--prompt_type', default='zero_shot', type=str,
                         choices=['zero_shot', 'zero_shot_cot'],
                         help='choose prompt type')
-    parser.add_argument('--evaluation-type', default=['logprob'], type=str, metavar='EVAL-TYPE', nargs='+',
-                        help='choose evaluator type'),
+    parser.add_argument('--evaluation_type', default=['logprob'], type=str, metavar='EVAL-TYPE', nargs='+',
+                        help='choose evaluator type (LLM or logprob)'),
     return parser
 
 
@@ -104,12 +102,16 @@ if __name__ == "__main__":
     args = get_args_parser()
     args = args.parse_args()
     print(f'Model: {args.model}')
+    if args.prompt_type == 'zero_shot':
+        ft_model_path = 'src/finetuning/mistral_atcs_finetune/checkpoint-125'
+    elif args.prompt_type == 'zero_shot_cot':
+        ft_model_path = 'src/finetuning/mistral_atcs_finetune/checkpoint-275'
     average_llm_acc, average_log_prob_acc = run_tasks(
         args.task, 
         args.model, 
         args.prompt_type,
         args.evaluation_type,
-        args.ft_model_path)
+        ft_model_path)
     print('\n\n')
     print('Accuracies for: ', args.model, args.prompt_type, args.task )
 
