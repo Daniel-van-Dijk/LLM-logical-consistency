@@ -26,8 +26,13 @@ The environment can be installed with: "conda env create -f env.yml"
 Run: 
 
 !pip install -q -U bitsandbytes
+
 !pip install -q -U git+https://github.com/huggingface/transformers.git
+
 !pip install -q -U git+https://github.com/huggingface/peft.git
+
 !pip install -q -U git+https://github.com/huggingface/accelerate.git
+
 !pip install -q trl xformers wandb datasets einops gradio sentencepiece
+
 !pip install scikit-learn
