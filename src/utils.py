@@ -82,19 +82,32 @@ def process_batch(model, batched_prompts, batched_mappings, batched_labels, task
     return results, num_processed
 
 
-def calculate_mismatch_rate(models = ['starling7B', 'mistral7B', 'llama3_8B'], printing=False):
+def calculate_mismatch_rate(models = ['mistral7B', 'llama3_8B', 'starling7B'], printing=False, cot=False):
     total_mismatch_rate = 0
     for model in models:
-        df = pd.read_csv(f'mismatch_data/{model}_mismatch.csv')
+        if cot:
+            filename = f'mismatch_data/{model}_zero_shot_cot_mismatch.csv'
+        else:
+            filename = f'mismatch_data/{model}_zero_shot_mismatch.csv'
+        df = pd.read_csv(filename)
         # drop text output nans since logits have no nans option
         df = df.dropna(subset=['sentiment'])
         mismatches = 0
+        found = 0
         for _, row in df.iterrows():
             # convert str to dict
             logits = ast.literal_eval(row['logits'])
             # strip potential whitespace
             text_answer = row['sentiment'].strip() 
-            pred_label = max(logits, key=logits.get).strip() 
+        
+            # Check if max value exists
+            # for example: "logits": {"A": -10000000000.0, "B": -10000000000.0, "C": -10000000000.0} 
+            # Here max() returns A (first value if all equal)
+            if logits['A'] == logits['B'] == logits['C']:
+                pred_label = 'no_max'
+            else:
+                pred_label = max(logits, key=logits.get).strip() 
+
             if pred_label != text_answer:
                 mismatches += 1
                 if printing:
@@ -107,12 +120,14 @@ def calculate_mismatch_rate(models = ['starling7B', 'mistral7B', 'llama3_8B'], p
           
         mismatch_rate = mismatches / len(df)
         total_mismatch_rate += mismatch_rate
-
-        print(f'Mismatch rate for {model}: {mismatch_rate * 100:.2f}%')
+        if cot:
+            print(f'Mismatch rate for {model} with CoT: {mismatch_rate * 100:.2f}%')
+        else:
+            print(f'Mismatch rate for {model}: {mismatch_rate * 100:.2f}%')
 
     print(f'Average mismatch rate of the models {total_mismatch_rate / len(models) * 100:.2f} %')
     
-
+calculate_mismatch_rate()
 
 def validate_args(args):
     if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
