@@ -127,7 +127,6 @@ def calculate_mismatch_rate(models = ['mistral7B', 'llama3_8B', 'starling7B'], p
 
     print(f'Average mismatch rate of the models {total_mismatch_rate / len(models) * 100:.2f} %')
     
-calculate_mismatch_rate()
 
 def validate_args(args):
     if args.evaluation_type == 'logprobs' and args.prompt_template != 'mcq':
