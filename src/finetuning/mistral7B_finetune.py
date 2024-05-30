@@ -32,11 +32,9 @@ class Mistral7B_ft:
         self.ft_model = PeftModel.from_pretrained(self.model, path)
 
     def inference_for_prompt(self,   prompt: List[Dict[str, str]]) -> str:
-        
-
         encodeds = self.tokenizer.apply_chat_template(prompt, return_tensors="pt", padding=True)
         prompt_length = encodeds.size(1)
         model_inputs = encodeds.to(self.device)
-        generated_ids = self.ft_model.generate(model_inputs, max_new_tokens=1, do_sample=True, pad_token_id=self.tokenizer.eos_token_id)
+        generated_ids = self.ft_model.generate(model_inputs, max_new_tokens=1, do_sample=False, pad_token_id=self.tokenizer.eos_token_id)
         decoded = self.tokenizer.decode(generated_ids[0][prompt_length:])
         return decoded
