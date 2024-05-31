@@ -61,11 +61,11 @@ Main script for inference is located in 'src/inference.py'.
 
 Example usage to run inference for Starling7B on the spatial subset with zero_shot and CoT reasoning:
 
-srun python -u src/inference.py --model starling7B --run_tasks spatial --prompt-type zero_shot_cot
+srun python -u src/inference.py --model starling7B --run_tasks spatial --prompt-type zero_shot_cot  
 
---model options: starling7B, llama3_8B and mistral7B
---run_tasks: spatial, numerical, quantifier, comparative and temporal
---prompt-type: zero_shot and zero_shot_cot
+--model options: starling7B, llama3_8B and mistral7B  
+--run_tasks: spatial, numerical, quantifier, comparative and temporal  
+--prompt-type: zero_shot and zero_shot_cot  
 
 ### Perform evaluation (and reproducing results)
 Main script for evaluation is located in "src/evaluate.py". 
