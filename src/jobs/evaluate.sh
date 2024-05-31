@@ -12,5 +12,5 @@ module purge
 module load 2023
 module load Anaconda3/2023.07-2
 
-source activate myenv_again
+source activate llm_venv_final
 srun python -u src/evaluate.py --model llama3_8B --task comparative --prompt_type zero_shot_cot --evaluation_type llm 

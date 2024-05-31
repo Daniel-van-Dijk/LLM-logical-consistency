@@ -14,5 +14,5 @@
 
 # Run your code
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate nlp_package
+conda activate llm_venv_final
 srun python -u models/mistral7B.py
