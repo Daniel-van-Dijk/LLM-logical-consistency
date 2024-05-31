@@ -28,9 +28,15 @@ def get_args_parser():
 
 def get_task_list_for_eval(model, task, prompt_type):
     """
-    put folders for model, task, prompt_type like: starling7B_zero_shot_numerical/ in root directory!
+    Steps to run evaluation on predictions
+    - Unzip zero_shot.zip and zero_shot_cot.zip in the predictions folder
+    - cd in to zero_shot/ folder and run in terminal: 
+            - for file in *.zip; do unzip "$file" -d "${file%.*}"; done
+    - do the same for zero_shot_cot/
     """
-    pattern = f'{model}_{prompt_type}_{task}/{model}_{prompt_type}_{task}-*.json'
+    task_id = f'{model}_{prompt_type}_{task}'
+    pattern = f'predictions/{prompt_type}/{task_id}/{task_id}/{task_id}-*.json'
+    print(pattern)
     files = glob.glob(pattern)
     return files
 
@@ -48,7 +54,7 @@ def run_tasks(tasks: List[str], model_name: str, prompt_type: str, evaluation_ty
     file_paths = get_task_list_for_eval(model_name, tasks, prompt_type)
     print(file_paths)
     if len(file_paths) == 0:
-        raise FileNotFoundError(f"No files found. Please first run inference or fix path")
+        raise FileNotFoundError(f"No files found. Please first run inference or fix path (check readme or get_task_list_for_eval())")
     else:
         print(f'files that will be evaluated', file_paths)
 
