@@ -70,7 +70,7 @@ srun python -u src/inference.py --model starling7B --run_tasks spatial --prompt-
 ### Perform evaluation (and reproducing results)
 Main script for evaluation is located in "src/evaluate.py". 
 
-## Reproducing results in paper
+#### Reproducing results in paper
 
 Perform the following steps to obtain the prediction files to reproduce the logical consistency performance results displayed in the paper
 
