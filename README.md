@@ -63,7 +63,7 @@ Example usage to run inference for Starling7B on the spatial subset with zero_sh
 
 srun python -u src/inference.py --model starling7B --run_tasks spatial --prompt-type zero_shot_cot  
 
---model options: starling7B, llama3_8B and mistral7B  
+--model: starling7B, llama3_8B and mistral7B  
 --run_tasks: spatial, numerical, quantifier, comparative and temporal  
 --prompt-type: zero_shot and zero_shot_cot  
 
@@ -83,7 +83,7 @@ Example usage to reproduce results for Starling7B on the numerical predictions s
 
 python -u src/evaluate.py --model starling7B --task numerical --prompt_type zero_shot_cot --evaluation_type llm 
 
---model options: starling7B, llama3_8B and mistral7B  
+--model: starling7B, llama3_8B and mistral7B  
 --task: spatial, numerical, quantifier, comparative and temporal  
 --prompt_type: zero_shot and zero_shot_cot  
 --evaluation_type: logprob and llm  
