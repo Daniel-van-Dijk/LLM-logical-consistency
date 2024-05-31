@@ -1,5 +1,5 @@
 # Assessing consistent logical reasoning in Large Language Models
-### Zoe Tzifa Kratira and Daniël van Dijk and Oliver Neut and Theofanis Aslanidis and Vasilis Karlis
+### Zoe Tzifa Kratira, Daniël van Dijk, Oliver Neut, Theofanis Aslanidis and Vasilis Karlis
 ### Supervised by Alina Leidinger
 
 
@@ -42,7 +42,7 @@ We include in our repo two folders containing annotated_data and modeling_data.
 - modeling_data includes the required transofrmed training and evaluation sets so that we can finetune and evaluate the respective models for zero-shot and zero-shot chain-of-thought 
 
 ### Download Input Data 
-The data that should be downloaded for the inference tasks can be found in https://github.com/microsoft/LoNLI/tree/main/data named "data_v2.zip" should be unzipped and places in the "data" folder outside src
+The data that should be downloaded for the inference tasks can be found in https://github.com/microsoft/LoNLI/tree/main/data named "data_v2.zip" should be unzipped and placed in the "data" folder outside src
 
 
 ### Download finetuned models to use as LLM evaluators
@@ -57,12 +57,41 @@ The above folders should be unzipped and placed in src/finetuning folder
 ## Main modules of our work
 
 ### Run inference for the provided models
-For this family of tasks the orchestrator module is 'src/inference.py'. When run, this module should be provided with the corresponding arguments for model selection, task selection etc.
+Main script for inference is located in 'src/inference.py'. 
+
+Example usage to run inference for Starling7B on the spatial subset with zero_shot and CoT reasoning:
+
+srun python -u src/inference.py --model starling7B --run_tasks spatial --prompt-type zero_shot_cot
+
+--model options: starling7B, llama3_8B and mistral7B
+--run_tasks: spatial, numerical, quantifier, comparative and temporal
+--prompt-type: zero_shot and zero_shot_cot
+
+### Perform evaluation (and reproducing results)
+Main script for evaluation is located in "src/evaluate.py". 
+
+## Reproducing results in paper
+
+Perform the following steps to obtain the prediction files to reproduce the logical consistency performance results displayed in the paper
+
+1. Download the folders zero_shot/ and zero_shot_cot/ from https://drive.google.com/drive/folders/1uHPl-d9m9D3hgymkw8Cm0XKaOkeCV9qT?usp=drive_link
+2. Unzip zero_shot.zip and zero_shot_cot.zip in the predictions/ folder
+3. Unzip all subfolders: CD into zero_shot/ folder and run from terminal: ``` for file in *.zip; do unzip "$file" -d "${file%.*}"; done ```
+4. Repeat step 3 for zero_shot_cot/
+
+Example usage to reproduce results for Starling7B on the numerical predictions subset with zero_shot reasoning evaluated with LLM
+
+python -u src/evaluate.py --model starling7B --task numerical --prompt_type zero_shot_cot --evaluation_type llm 
+
+--model options: starling7B, llama3_8B and mistral7B
+--task: spatial, numerical, quantifier, comparative and temporal
+--prompt_type: zero_shot and zero_shot_cot
+--evaluation_type: logprob and llm
+
+Note: only use logprob evaluation for zero_shot
+
+
 
 ### Prepare data for LLM evaluator finetuning
 In order to perform finetuning, we manually annotated LLMs outputs and placed the outputs in "src/finetuning/annotated_data" folder. Following that, "src/finetuning/ft_data_processing.py" is the module responsible for performing the necessary data splits and structure so that the we can perform finetuning and evaluation. The outputs are stored in "src/finetuning/modeling_data"
-
-### Perform evaluation
-For this family of tasks the orrchestrator module is "src/evaluate.py". Once again, it is esential to perform runs selecting the respective arguments.
-
 
