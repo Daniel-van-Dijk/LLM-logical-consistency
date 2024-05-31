@@ -83,10 +83,10 @@ Example usage to reproduce results for Starling7B on the numerical predictions s
 
 python -u src/evaluate.py --model starling7B --task numerical --prompt_type zero_shot_cot --evaluation_type llm 
 
---model options: starling7B, llama3_8B and mistral7B
---task: spatial, numerical, quantifier, comparative and temporal
---prompt_type: zero_shot and zero_shot_cot
---evaluation_type: logprob and llm
+--model options: starling7B, llama3_8B and mistral7B  
+--task: spatial, numerical, quantifier, comparative and temporal  
+--prompt_type: zero_shot and zero_shot_cot  
+--evaluation_type: logprob and llm  
 
 Note: only use logprob evaluation for zero_shot
 
